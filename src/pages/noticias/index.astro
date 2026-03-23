@@ -1,0 +1,39 @@
+---
+export const prerender = true;
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+const noticias = (await getCollection('noticias')).sort(
+  (a, b) => b.data.fecha.getTime() - a.data.fecha.getTime()
+);
+---
+
+<Layout title="Noticias" description="Noticias reales sobre el AA.HH. Enrique Milla Ochoa y el distrito de Los Olivos">
+  <section class="page-hero">
+    <h1>Noticias de <span>Enrique Milla Ochoa</span></h1>
+    <p>Hechos reales y novedades del asentamiento y del distrito de Los Olivos</p>
+  </section>
+
+  <section class="section">
+    <div class="cards-grid">
+      {noticias.map(n => (
+        <a href={`/noticias/${n.id.replace(/\.md$/, '')}`} class="card" style="text-decoration:none; color:inherit;">
+          <div class="card-img">{n.data.emoji}</div>
+          <div class="card-body">
+            <h3>{n.data.titulo}</h3>
+            <p>{n.data.resumen}</p>
+            {n.data.fuente && (
+              <p style="font-size:0.8rem; color:var(--green-500); margin-top:0.4rem;">Fuente: {n.data.fuente}</p>
+            )}
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.6rem;">
+              <span class="card-tag">{n.data.tag}</span>
+              <span style="font-size:0.78rem; color:var(--text-muted);">
+                {n.data.fecha.toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' })}
+              </span>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+</Layout>

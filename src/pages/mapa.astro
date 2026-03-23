@@ -1,0 +1,195 @@
+---
+export const prerender = true;
+import Layout from '../layouts/Layout.astro';
+
+const lugares = [
+  { nombre: 'Mercado Enrique Milla Ochoa', lat: -11.9572, lng: -77.0798, tipo: 'Mercado', dir: 'Av. Central 1078' },
+  { nombre: 'I.E. Enrique Milla Ochoa', lat: -11.9572, lng: -77.0798, tipo: 'Educacion', dir: 'C. 6 Mz143A Lt8, Av. Central' },
+  { nombre: 'Centro de Salud EMO', lat: -11.9566, lng: -77.0824, tipo: 'Salud', dir: 'C. 59 31, Mz 124' },
+  { nombre: 'Capilla Divina Misericordia', lat: -11.9561, lng: -77.0789, tipo: 'Religioso', dir: 'C. Carlos Ubillus Oleman' },
+  { nombre: 'Parque Los Suspiros', lat: -11.9584, lng: -77.0834, tipo: 'Parque', dir: 'C. Los Suspiros / C. Rodas' },
+  { nombre: 'Polleria El Volador Cajamarquino', lat: -11.9568, lng: -77.0785, tipo: 'Restaurante', dir: 'Av. Central #922' },
+  { nombre: 'Kelly\'s', lat: -11.9565, lng: -77.0790, tipo: 'Restaurante', dir: 'Jr. Urano' },
+  { nombre: 'Panaderia Panchito', lat: -11.9555, lng: -77.0795, tipo: 'Comercio', dir: 'AA.HH. Enrique Milla Ochoa' },
+  { nombre: 'Botica Real Farma', lat: -11.9570, lng: -77.0800, tipo: 'Farmacia', dir: 'AA.HH. Enrique Milla Ochoa' },
+  { nombre: 'Funcional Cross Training', lat: -11.9578, lng: -77.0790, tipo: 'Deporte', dir: 'AA.HH. Enrique Milla Ochoa' },
+  { nombre: 'Gruta de Santa Rosa', lat: -11.9568, lng: -77.0800, tipo: 'Religioso', dir: 'AA.HH. Enrique Milla Ochoa' },
+  { nombre: 'Huaca Pro', lat: -11.9399, lng: -77.0763, tipo: 'Arqueologia', dir: 'Jr. Comprension y Jr. Los Principios, Urb. Pro' },
+  { nombre: 'MegaPlaza', lat: -11.9950, lng: -77.0620, tipo: 'Centro Comercial', dir: 'Av. Alfredo Mendiola 3698' },
+  { nombre: 'Estacion Naranjal', lat: -11.9827, lng: -77.0586, tipo: 'Transporte', dir: 'Av. Tupac Amaru con Av. Chinchaysuyo' },
+  { nombre: 'Universidad Cesar Vallejo', lat: -11.9700, lng: -77.0640, tipo: 'Educacion', dir: 'Av. Alfredo Mendiola 6232' },
+];
+---
+
+<Layout title="Mapa" description="Mapa interactivo del AA.HH. Enrique Milla Ochoa y sus alrededores en Los Olivos">
+  <section class="page-hero">
+    <h1>Mapa de <span>Enrique Milla Ochoa</span></h1>
+    <p>Ubicacion del asentamiento y puntos de interes en Los Olivos</p>
+  </section>
+
+  <section class="section">
+    <div class="map-container">
+      <iframe
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3901.5!2d-77.0815!3d-11.957!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105d1e1e476eb77%3A0x69f3b56eb31561b0c!2sA.H%20Enrique%20Milla%20Ochoa!5e0!3m2!1ses!2spe!4v1709000000000"
+        allowfullscreen
+        loading="lazy"
+        referrerpolicy="no-referrer-when-downgrade">
+      </iframe>
+    </div>
+
+    <div class="highlight-box" style="margin-top:1.5rem;">
+      <h3>Ubicacion</h3>
+      <p>El AA.HH. Enrique Milla Ochoa se ubica en la zona noroeste del distrito de Los Olivos, Lima Norte. Coordenadas aproximadas: <strong>-11.9572, -77.0798</strong>. Sus calles principales son la <strong>Av. Central</strong>, <strong>Av. Romulo Betancourt</strong> y la <strong>C. Carlos Ubillus Oleman</strong>. Colinda con los asentamientos Laura Caller Iberico y Armando Villanueva del Campo.</p>
+    </div>
+
+    <h2 class="section-title" style="margin-top:2rem;">Directorio de lugares</h2>
+    <p class="section-subtitle">Todos los puntos de interes mapeados</p>
+
+    <div class="lugar-list">
+      {lugares.map(l => (
+        <div class="lugar-item">
+          <div class="lugar-tipo">{l.tipo}</div>
+          <div class="lugar-info">
+            <h3>{l.nombre}</h3>
+            <p>{l.dir}, Los Olivos</p>
+          </div>
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${l.lat},${l.lng}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            class="lugar-link"
+          >
+            Ver en Maps
+          </a>
+        </div>
+      ))}
+    </div>
+
+    <h2 class="section-title" style="margin-top:3rem;">Street View</h2>
+    <p class="section-subtitle">Vista a nivel de calle del asentamiento</p>
+
+    <div class="streetview-grid">
+      <div class="streetview-card">
+        <div class="streetview-frame">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!4v1709000000000!6m8!1m7!1sCAoSLEFGMVFpcE5pMDJ4RmNEZlRPbkRjR0hRMXVYUHZIQXczSjRKeGlkN2tRVl9L!2m2!1d-11.9572!2d-77.0798!3f0!4f0!5f0.7820865974627469"
+            allowfullscreen
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        </div>
+        <p>Av. Central - Zona del Mercado</p>
+      </div>
+      <div class="streetview-card">
+        <div class="streetview-frame">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!4v1709000000000!6m8!1m7!1sCAoSLEFGMVFpcE5pMDJ4RmNEZlRPbkRjR0hRMXVYUHZIQXczSjRKeGlkN2tRVl9L!2m2!1d-11.9566!2d-77.0824!3f90!4f0!5f0.7820865974627469"
+            allowfullscreen
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
+        </div>
+        <p>Zona del Centro de Salud</p>
+      </div>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .map-container {
+    width: 100%;
+    height: 500px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+  }
+  .map-container iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  .lugar-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .lugar-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--white);
+    padding: 0.8rem 1.2rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    border-left: 4px solid var(--green-500);
+  }
+  .lugar-tipo {
+    background: var(--yellow-100);
+    color: var(--yellow-700);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.25rem 0.6rem;
+    border-radius: 20px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    flex-shrink: 0;
+  }
+  .lugar-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .lugar-info h3 {
+    font-size: 0.95rem;
+    color: var(--green-900);
+    margin-bottom: 0.1rem;
+  }
+  .lugar-info p {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+  }
+  .lugar-link {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--green-700);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .lugar-link:hover {
+    color: var(--yellow-700);
+  }
+
+  .streetview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    gap: 1.5rem;
+  }
+  .streetview-card {
+    text-align: center;
+  }
+  .streetview-card p {
+    margin-top: 0.5rem;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+  }
+  .streetview-frame {
+    width: 100%;
+    height: 300px;
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  .streetview-frame iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+  }
+
+  @media (max-width: 768px) {
+    .map-container { height: 350px; }
+    .lugar-item { flex-wrap: wrap; }
+    .streetview-grid { grid-template-columns: 1fr; }
+    .streetview-frame { height: 250px; }
+  }
+</style>

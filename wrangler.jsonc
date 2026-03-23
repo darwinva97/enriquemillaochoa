@@ -1,0 +1,15 @@
+{
+  "name": "enrique-milla-ochoa",
+  "main": "dist\\_worker.js\\index.js",
+  "compatibility_date": "2025-04-20",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": { "binding": "ASSETS", "directory": "dist" },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_id": "a33438f7-84b1-40e1-a96d-2607e5b72512",
+      "database_name": "enrique-milla-ochoa-forum",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

@@ -1,0 +1,167 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const { id } = Astro.params;
+const { env } = Astro.locals.runtime;
+const db = env.DB;
+
+const thread = await db.prepare('SELECT * FROM threads WHERE id = ?').bind(id).first();
+
+if (!thread) {
+  return Astro.redirect('/foros');
+}
+
+let replyError = '';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const author = (form.get('author') as string || '').trim();
+  const content = (form.get('content') as string || '').trim();
+
+  if (!author || !content) {
+    replyError = 'Nombre y contenido son obligatorios.';
+  } else if (author.length > 50 || content.length > 3000) {
+    replyError = 'Uno o mas campos exceden el limite de caracteres.';
+  } else {
+    await db.prepare(
+      'INSERT INTO replies (thread_id, author, content) VALUES (?, ?, ?)'
+    ).bind(id, author, content).run();
+
+    return Astro.redirect(`/foros/${id}`);
+  }
+}
+
+const { results: replies } = await db.prepare(
+  'SELECT * FROM replies WHERE thread_id = ? ORDER BY created_at ASC'
+).bind(id).all();
+---
+
+<Layout title={thread.title as string} description={`Tema del foro: ${thread.title}`}>
+  <section class="page-hero">
+    <h1><span>{thread.title}</span></h1>
+    <p>Por {thread.author} &middot; {thread.category} &middot; {thread.created_at}</p>
+  </section>
+
+  <section class="section">
+    <div class="content-block">
+      <p style="white-space:pre-wrap;">{thread.content}</p>
+      <div class="forum-meta" style="margin-top:1rem;">
+        Publicado por <strong>{thread.author}</strong> el {thread.created_at}
+      </div>
+    </div>
+
+    <h3 style="margin:2rem 0 1rem; color:var(--green-900);">
+      {replies.length} respuesta{replies.length !== 1 ? 's' : ''}
+    </h3>
+
+    {(replies as any[]).map(r => (
+      <div class="reply">
+        <div class="reply-header">
+          <strong>{r.author}</strong>
+          <span>{r.created_at}</span>
+        </div>
+        <p style="white-space:pre-wrap;">{r.content}</p>
+      </div>
+    ))}
+
+    <div class="content-block" style="margin-top:2rem; border-left-color:var(--yellow-500);">
+      <h3 style="color:var(--yellow-700); margin-bottom:0.8rem;">Responder</h3>
+
+      {replyError && (
+        <div class="error-msg">{replyError}</div>
+      )}
+
+      <form method="POST">
+        <div class="form-group">
+          <label for="author">Tu nombre o alias</label>
+          <input type="text" id="author" name="author" required maxlength="50" placeholder="Ej: Vecino Juan, Mz. H" />
+        </div>
+
+        <div class="form-group">
+          <label for="content">Tu respuesta</label>
+          <textarea id="content" name="content" required rows="4" maxlength="3000" placeholder="Escribe tu respuesta..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-primary">Enviar respuesta</button>
+      </form>
+    </div>
+
+    <a href="/foros" style="display:inline-block; margin-top:1.5rem; font-size:0.9rem;">&larr; Volver a los foros</a>
+  </section>
+</Layout>
+
+<style>
+  .reply {
+    background: var(--white);
+    border-radius: var(--radius);
+    padding: 1rem 1.2rem;
+    box-shadow: var(--shadow);
+    margin-bottom: 0.8rem;
+    border-left: 3px solid var(--green-300);
+  }
+  .reply-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--green-700);
+  }
+  .reply-header span {
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
+  .reply p {
+    color: var(--text-dark);
+    font-size: 0.92rem;
+  }
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    color: var(--green-900);
+    font-size: 0.9rem;
+  }
+  .form-group input,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border: 2px solid var(--green-100);
+    border-radius: 6px;
+    font-size: 0.92rem;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--green-500);
+  }
+  .btn-primary {
+    display: inline-block;
+    background: var(--green-700);
+    color: var(--white);
+    padding: 0.7rem 1.5rem;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover {
+    background: var(--green-900);
+  }
+  .error-msg {
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 0.8rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    border-left: 4px solid #ef4444;
+    font-size: 0.9rem;
+  }
+</style>

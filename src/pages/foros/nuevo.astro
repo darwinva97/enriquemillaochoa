@@ -1,0 +1,128 @@
+---
+import Layout from '../../layouts/Layout.astro';
+
+const categories = ['General', 'Servicios', 'Seguridad', 'Deportes', 'Cultura', 'Avisos', 'Historia'];
+let error = '';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  const title = (form.get('title') as string || '').trim();
+  const author = (form.get('author') as string || '').trim();
+  const content = (form.get('content') as string || '').trim();
+  const category = (form.get('category') as string || 'General').trim();
+
+  if (!title || !author || !content) {
+    error = 'Todos los campos son obligatorios.';
+  } else if (title.length > 200 || author.length > 50 || content.length > 5000) {
+    error = 'Uno o mas campos exceden el limite de caracteres.';
+  } else {
+    const { env } = Astro.locals.runtime;
+    const db = env.DB;
+    await db.prepare(
+      'INSERT INTO threads (title, author, content, category) VALUES (?, ?, ?, ?)'
+    ).bind(title, author, content, category).run();
+
+    return Astro.redirect('/foros');
+  }
+}
+---
+
+<Layout title="Nuevo tema" description="Crear un nuevo tema en el foro del AA.HH. Enrique Milla Ochoa">
+  <section class="page-hero">
+    <h1>Crear nuevo <span>tema</span></h1>
+    <p>Comparte una pregunta, noticia o inquietud con tus vecinos</p>
+  </section>
+
+  <section class="section">
+    <div class="content-block">
+      {error && (
+        <div class="error-msg">{error}</div>
+      )}
+
+      <form method="POST">
+        <div class="form-group">
+          <label for="author">Tu nombre o alias</label>
+          <input type="text" id="author" name="author" required maxlength="50" placeholder="Ej: Vecino Juan, Mz. H" />
+        </div>
+
+        <div class="form-group">
+          <label for="category">Categoria</label>
+          <select id="category" name="category">
+            {categories.map(c => (
+              <option value={c}>{c}</option>
+            ))}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="title">Titulo del tema</label>
+          <input type="text" id="title" name="title" required maxlength="200" placeholder="Describe brevemente tu tema" />
+        </div>
+
+        <div class="form-group">
+          <label for="content">Contenido</label>
+          <textarea id="content" name="content" required rows="6" maxlength="5000" placeholder="Escribe los detalles aqui..."></textarea>
+        </div>
+
+        <div style="display:flex; gap:1rem; align-items:center;">
+          <button type="submit" class="btn-primary">Publicar tema</button>
+          <a href="/foros" style="font-size:0.9rem;">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .form-group {
+    margin-bottom: 1.2rem;
+  }
+  .form-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    color: var(--green-900);
+    font-size: 0.9rem;
+  }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.6rem 0.8rem;
+    border: 2px solid var(--green-100);
+    border-radius: 6px;
+    font-size: 0.92rem;
+    font-family: inherit;
+    transition: border-color 0.2s;
+  }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    outline: none;
+    border-color: var(--green-500);
+  }
+  .btn-primary {
+    display: inline-block;
+    background: var(--green-700);
+    color: var(--white);
+    padding: 0.7rem 1.5rem;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover {
+    background: var(--green-900);
+  }
+  .error-msg {
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 0.8rem 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    border-left: 4px solid #ef4444;
+    font-size: 0.9rem;
+  }
+</style>

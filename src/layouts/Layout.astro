@@ -1,0 +1,85 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Portal comunitario del AA.HH. Enrique Milla Ochoa, Los Olivos, Lima, Peru' } = Astro.props;
+const currentPath = Astro.url.pathname;
+
+const navLinks = [
+  { href: '/', label: 'Inicio' },
+  { href: '/historia', label: 'Historia' },
+  { href: '/noticias', label: 'Noticias' },
+  { href: '/negocios', label: 'Negocios' },
+  { href: '/lugares', label: 'Lugares' },
+  { href: '/mapa', label: 'Mapa' },
+  { href: '/foros', label: 'Foros' },
+  { href: '/curiosidades', label: 'Curiosidades' },
+];
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>{title} | AA.HH. Enrique Milla Ochoa</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <a href="/" class="site-logo">
+          <span>EMO</span> Enrique Milla Ochoa
+        </a>
+        <nav class="main-nav">
+          {navLinks.map(link => (
+            <a href={link.href} class:list={[{ active: currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href)) }]}>
+              {link.label}
+            </a>
+          ))}
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-col">
+          <h4>AA.HH. Enrique Milla Ochoa</h4>
+          <p>Portal comunitario del Asentamiento Humano Arq. Enrique Milla Ochoa, distrito de Los Olivos, Lima Norte, Peru.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Secciones</h4>
+          {navLinks.map(link => (
+            <a href={link.href} style="display:block">{link.label}</a>
+          ))}
+        </div>
+        <div class="footer-col">
+          <h4>Ubicacion</h4>
+          <p>
+            Distrito de Los Olivos<br/>
+            Lima Norte, Lima<br/>
+            Peru
+          </p>
+          <p style="margin-top:0.5rem; font-size:0.82rem;">
+            Creado el 4 de abril de 1989<br/>
+            Ley N.° 25017
+          </p>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 Portal Comunitario Enrique Milla Ochoa. Hecho con amor por la comunidad.</p>
+      </div>
+    </footer>
+  </body>
+</html>
+
+<style is:global>
+  @import '../styles/global.css';
+</style>

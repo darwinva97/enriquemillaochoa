@@ -1,0 +1,88 @@
+---
+export const prerender = true;
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+
+export async function getStaticPaths() {
+  const noticias = await getCollection('noticias');
+  return noticias.map(entry => ({
+    params: { slug: entry.id.replace(/\.md$/, '') },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+const fechaFormateada = entry.data.fecha.toLocaleDateString('es-PE', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<Layout title={entry.data.titulo} description={entry.data.resumen}>
+  <section class="page-hero">
+    <h1><span>{entry.data.titulo}</span></h1>
+    <p>{fechaFormateada} &middot; {entry.data.tag} &middot; Por {entry.data.autor}</p>
+  </section>
+
+  <section class="section">
+    <div class="content-block article-content">
+      <Content />
+    </div>
+
+    {entry.data.fuente && (
+      <div class="highlight-box">
+        <h3>Fuente</h3>
+        <p>
+          {entry.data.fuenteUrl ? (
+            <a href={entry.data.fuenteUrl} target="_blank" rel="noopener noreferrer">
+              {entry.data.fuente}
+            </a>
+          ) : (
+            entry.data.fuente
+          )}
+        </p>
+      </div>
+    )}
+
+    <a href="/noticias" style="display:inline-block; margin-top:1rem; font-size:0.9rem;">&larr; Volver a noticias</a>
+  </section>
+</Layout>
+
+<style>
+  .article-content :global(h2) {
+    color: var(--green-900);
+    font-size: 1.3rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .article-content :global(h3) {
+    color: var(--green-700);
+    font-size: 1.1rem;
+    margin-top: 1.2rem;
+    margin-bottom: 0.4rem;
+  }
+  .article-content :global(p) {
+    color: var(--text-muted);
+    margin-bottom: 0.8rem;
+    line-height: 1.7;
+  }
+  .article-content :global(ul),
+  .article-content :global(ol) {
+    color: var(--text-muted);
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .article-content :global(li) {
+    margin-bottom: 0.4rem;
+    line-height: 1.6;
+  }
+  .article-content :global(strong) {
+    color: var(--text-dark);
+  }
+  .article-content :global(em) {
+    color: var(--green-700);
+  }
+</style>
