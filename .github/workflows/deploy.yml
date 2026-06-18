@@ -23,9 +23,21 @@ jobs:
           curl -s https://api.cloudflare.com/client/v4/user/tokens/verify \
             -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN"
           echo ""
-          echo "== D1 list (permiso D1) =="
+          echo "== D1 list (cuenta configurada en el secret) =="
           curl -s "https://api.cloudflare.com/client/v4/accounts/$CLOUDFLARE_ACCOUNT_ID/d1/database" \
-            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | head -c 500
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | head -c 400
+          echo ""
+          echo "== cuentas a las que el token tiene acceso =="
+          curl -s "https://api.cloudflare.com/client/v4/accounts" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | head -c 600
+          echo ""
+          echo "== D1 en cuenta darwin (39f3db3a...) =="
+          curl -s "https://api.cloudflare.com/client/v4/accounts/39f3db3a2ce79188fddf0cb83e72f8be/d1/database" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | head -c 300
+          echo ""
+          echo "== D1 en cuenta smartperu (9bea4537...) =="
+          curl -s "https://api.cloudflare.com/client/v4/accounts/9bea4537335b85134cfebbcb8bda5883/d1/database" \
+            -H "Authorization: Bearer $CLOUDFLARE_API_TOKEN" | head -c 300
           echo ""
       - name: Deploy with Alchemy
         run: npm run deploy
