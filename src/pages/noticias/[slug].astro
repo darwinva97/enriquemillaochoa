@@ -74,6 +74,8 @@ const parrafos = alerta
       .map((p: string) => p.trim())
       .filter(Boolean)
   : [];
+// Índice tras el cual insertar la 2.ª imagen (hacia la mitad del cuerpo).
+const img2Idx = Math.min(2, Math.max(0, parrafos.length - 2));
 ---
 
 <Layout title={data.titulo} description={data.resumen} image={data.banner ?? undefined} type="article">
@@ -94,8 +96,24 @@ const parrafos = alerta
     ) : (
       <div class="content-block">
         <p style="color:var(--green-700); font-weight:600; font-size:1.05rem;">{data.resumen}</p>
-        {parrafos.map((p: string) => (
-          <p style="color:var(--text-muted); line-height:1.7; margin-bottom:0.8rem;">{p}</p>
+        {parrafos.map((p: string, i: number) => (
+          <>
+            <p style="color:var(--text-muted); line-height:1.7; margin-bottom:0.8rem;">{p}</p>
+            {alerta?.image2 && i === img2Idx && (
+              <figure class="inline-img">
+                <img src={alerta.image2} alt={data.titulo} loading="lazy" />
+                {alerta.image2_credit && (
+                  <figcaption>
+                    {alerta.image2_credit_url ? (
+                      <a href={alerta.image2_credit_url} target="_blank" rel="noopener noreferrer">{alerta.image2_credit}</a>
+                    ) : (
+                      alerta.image2_credit
+                    )}
+                  </figcaption>
+                )}
+              </figure>
+            )}
+          </>
         ))}
       </div>
     )}
@@ -163,6 +181,11 @@ const parrafos = alerta
   .article-content :global(li) { margin-bottom: 0.4rem; line-height: 1.6; }
   .article-content :global(strong) { color: var(--text-dark); }
   .article-content :global(em) { color: var(--green-700); }
+
+  .inline-img { margin: 1.5rem 0; }
+  .inline-img img { width: 100%; height: auto; border-radius: var(--radius); display: block; box-shadow: var(--shadow); }
+  .inline-img figcaption { font-size: 0.78rem; color: var(--text-muted); text-align: right; margin-top: 0.4rem; }
+  .inline-img figcaption a { color: var(--text-muted); }
 
   .rel-img { overflow: hidden; }
   .rel-img img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.45s ease; }

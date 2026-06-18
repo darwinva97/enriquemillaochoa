@@ -25,20 +25,27 @@ for (const e of eventos) {
   const [pf, pu, pt] = e.sources[0];
   const principalTitulo = `${pt} (${pf})`;
   const m = img[e.slug] || {};
+  const i2 = m.image2 || {};
   out.push(`-- ${e.slug}  (${e.sources.length} fuente(s))`);
   // INSERT para instalaciones nuevas...
   out.push(
-    `INSERT OR IGNORE INTO alert_news (guid, slug, source_url, source_title, titulo, resumen, cuerpo, tag, emoji, image_card, image_banner, image_credit, image_credit_url, status) VALUES (\n  ${q(
+    `INSERT OR IGNORE INTO alert_news (guid, slug, source_url, source_title, titulo, resumen, cuerpo, tag, emoji, image_card, image_banner, image_credit, image_credit_url, image2, image2_credit, image2_credit_url, status) VALUES (\n  ${q(
       e.guid,
     )}, ${q(e.slug)}, ${q(pu)}, ${q(principalTitulo)}, ${q(e.titulo)}, ${q(e.resumen)}, ${q(e.cuerpo)}, ${q(
       e.tag,
-    )}, ${q(e.emoji)}, ${q(m.image)}, ${q(m.image)}, ${q(m.credit)}, ${q(m.creditUrl)}, 'draft'\n);`,
+    )}, ${q(e.emoji)}, ${q(m.image)}, ${q(m.image)}, ${q(m.credit)}, ${q(m.creditUrl)}, ${q(i2.image)}, ${q(
+      i2.credit,
+    )}, ${q(i2.creditUrl)}, 'draft'\n);`,
   );
-  // ...y UPDATE para filas ya existentes (añade slug/imágenes sin tocar el estado).
+  // ...y UPDATE para filas ya existentes (añade slug/imágenes/cuerpo sin tocar el estado).
   out.push(
-    `UPDATE alert_news SET slug=${q(e.slug)}, image_card=${q(m.image)}, image_banner=${q(m.image)}, image_credit=${q(
-      m.credit,
-    )}, image_credit_url=${q(m.creditUrl)} WHERE guid=${q(e.guid)};`,
+    `UPDATE alert_news SET titulo=${q(e.titulo)}, resumen=${q(e.resumen)}, cuerpo=${q(e.cuerpo)}, slug=${q(
+      e.slug,
+    )}, image_card=${q(m.image)}, image_banner=${q(m.image)}, image_credit=${q(m.credit)}, image_credit_url=${q(
+      m.creditUrl,
+    )}, image2=${q(i2.image)}, image2_credit=${q(i2.credit)}, image2_credit_url=${q(i2.creditUrl)} WHERE guid=${q(
+      e.guid,
+    )};`,
   );
   for (const [fuente, url, titulo] of e.sources) {
     out.push(

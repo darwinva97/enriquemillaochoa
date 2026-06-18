@@ -3,13 +3,23 @@
     "image": "/img/noticias/detienen-personero-93-cedulas-colegio-enrique-milla.webp",
     "credit": "Foto: Infobae",
     "creditUrl": "https://www.infobae.com/peru/2026/06/07/un-hombre-de-81-anos-destruye-actas-electorales-tras-hacerse-pasar-por-personero-en-los-olivos-pnp-lo-detuvo/",
-    "creditTitulo": "Un hombre de 81 años raya varias actas electorales tras asegurar que es personero en Los Olivos"
+    "creditTitulo": "Un hombre de 81 años raya varias actas electorales tras asegurar que es personero en Los Olivos",
+    "image2": {
+      "image": "/img/noticias/detienen-personero-93-cedulas-colegio-enrique-milla-2.webp",
+      "credit": "Foto: Infobae",
+      "creditUrl": "https://www.infobae.com/peru/2026/06/10/el-poder-judicial-ordena-la-liberacion-del-hombre-de-81-anos-acusado-de-rayar-cedulas-en-los-olivos/"
+    }
   },
   "ladron-cae-tercer-piso-robo-los-olivos": {
     "image": "/img/noticias/ladron-cae-tercer-piso-robo-los-olivos.webp",
     "credit": "Foto: Caretas",
     "creditUrl": "https://caretas.pe/nacional/los-olivos-presunto-ladron-termina-gravemente-herido-tras-caer-de-un-tercer-piso-durante-robo-fallido/",
-    "creditTitulo": "Ladrón cae de tercer piso durante robo en Los Olivos"
+    "creditTitulo": "Ladrón cae de tercer piso durante robo en Los Olivos",
+    "image2": {
+      "image": "/img/noticias/ladron-cae-tercer-piso-robo-los-olivos-2.webp",
+      "credit": "Foto: El Comercio Perú",
+      "creditUrl": "https://elcomercio.pe/videos/pais/ladron-cae-del-tercer-piso-al-intentar-robar-casa-en-los-olivos-nnav-amtv-video-noticia/"
+    }
   },
   "bebe-fallece-negligencia-guarderia-babyland-los-olivos": {
     "image": "/img/noticias/bebe-fallece-negligencia-guarderia-babyland-los-olivos.webp",
@@ -21,13 +31,23 @@
     "image": "/img/noticias/corte-agua-sedapal-martes-16-junio.webp",
     "credit": "Foto: Infobae",
     "creditUrl": "https://www.infobae.com/peru/2026/06/15/corte-de-agua-para-este-martes-16-de-junio-conoce-las-zonas-afectadas/",
-    "creditTitulo": "Corte de agua para este martes 16 de junio: conoce las zonas afectadas"
+    "creditTitulo": "Corte de agua para este martes 16 de junio: conoce las zonas afectadas",
+    "image2": {
+      "image": "/img/noticias/corte-agua-sedapal-martes-16-junio-2.webp",
+      "credit": "Foto: Yasmine.shal / Wikimedia Commons (CC BY-SA 4.0)",
+      "creditUrl": "https://commons.wikimedia.org/wiki/File:Water_faucet_4.jpg"
+    }
   },
   "segunda-vuelta-2026-conteo-onpe-resultado-ajustado": {
     "image": "/img/noticias/segunda-vuelta-2026-conteo-onpe-resultado-ajustado.webp",
     "credit": "Foto: Trome.com",
     "creditUrl": "https://trome.com/actualidad/politica/resultados-del-conteo-oficial-de-la-onpe-de-la-segunda-vuelta-actas-procesadas-de-keiko-fujimori-de-fuerza-popular-y-de-roberto-sanchez-de-juntos-por-el-peru-noticia/",
-    "creditTitulo": "Resultados del conteo oficial de la ONPE de la segunda vuelta al 95.352%"
+    "creditTitulo": "Resultados del conteo oficial de la ONPE de la segunda vuelta al 95.352%",
+    "image2": {
+      "image": "/img/noticias/segunda-vuelta-2026-conteo-onpe-resultado-ajustado-2.webp",
+      "credit": "Foto: Txolo / Wikimedia Commons (CC BY-SA 4.0)",
+      "creditUrl": "https://commons.wikimedia.org/wiki/File:Segunda_vuelta_elecciones_generales_de_Per%C3%BA_2021.jpg"
+    }
   },
   "ricardo-belmont-cancer-irreversible": {
     "image": "/img/noticias/ricardo-belmont-cancer-irreversible.webp",

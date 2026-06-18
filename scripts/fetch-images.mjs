@@ -106,7 +106,7 @@ async function ogImage(pageUrl) {
 }
 
 // Descarga + optimiza a WebP. Devuelve el nombre de archivo.
-async function descargarOptimizar(imgUrl, slug) {
+async function descargarOptimizar(imgUrl, slug, opts = {}) {
   const res = await fetchRetry(imgUrl, { timeout: 25000 });
   const ct = (res.headers.get('content-type') || '').toLowerCase();
   if (ct && !ct.startsWith('image/')) throw new Error(`no es imagen (${ct})`);
@@ -114,8 +114,8 @@ async function descargarOptimizar(imgUrl, slug) {
   if (buf.length < 2000) throw new Error('imagen demasiado pequeña');
   const webp = await sharp(buf)
     .rotate() // respeta orientación EXIF
-    .resize({ width: MAX_W, withoutEnlargement: true })
-    .webp({ quality: 80 })
+    .resize({ width: opts.width ?? MAX_W, withoutEnlargement: true })
+    .webp({ quality: opts.quality ?? 80 })
     .toBuffer();
   limpiar(slug);
   const file = `${slug}.webp`;
@@ -197,10 +197,35 @@ function leerEditoriales() {
 const manifestPath = join(__dirname, 'images-manifest.json');
 const manifest = existsSync(manifestPath) ? JSON.parse(readFileSync(manifestPath, 'utf8')) : {};
 
+// Resuelve la 2.ª imagen (inline) de un evento: og:image de una fuente o URL directa.
+async function resolverImagen2(e) {
+  if (!e.image2) return null;
+  const dest = `${e.slug}-2`;
+  const op = { width: 1000, quality: 75 }; // las inline se muestran más pequeñas
+  if (existing(dest) && !FORCE) return null;
+  try {
+    if (e.image2.og) {
+      const [fuente, pageUrl] = e.image2.og;
+      const img = await ogImage(pageUrl);
+      const { file, bytes } = await descargarOptimizar(img, dest, op);
+      console.log(`  ✓ ${dest}  <- ${fuente}  (${Math.round(bytes / 1024)} KB webp)`);
+      return { image: `/img/noticias/${file}`, credit: `Foto: ${fuente}`, creditUrl: pageUrl };
+    }
+    const { file, bytes } = await descargarOptimizar(e.image2.url, dest, op);
+    console.log(`  ✓ ${dest}  <- ${e.image2.credit}  (${Math.round(bytes / 1024)} KB webp)`);
+    return { image: `/img/noticias/${file}`, credit: e.image2.credit, creditUrl: e.image2.creditUrl };
+  } catch (err) {
+    console.log(`  · ${dest}: ${err.message}`);
+    return null;
+  }
+}
+
 console.log('Eventos (BD):');
 for (const e of eventos) {
   const r = await resolverImagen(e);
   if (r) manifest[e.slug] = r;
+  const r2 = await resolverImagen2(e);
+  if (r2) manifest[e.slug] = { ...(manifest[e.slug] || {}), image2: r2 };
 }
 console.log('Editoriales (markdown):');
 for (const a of leerEditoriales()) {
