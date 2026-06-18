@@ -1,0 +1,47 @@
+---
+export const prerender = false;
+import Layout from '../../../layouts/Layout.astro';
+
+const { env } = Astro.locals.runtime;
+const { id } = Astro.params;
+
+const n = (await env.DB.prepare(
+  "SELECT * FROM alert_news WHERE id=? AND status='published'",
+)
+  .bind(id)
+  .first()) as any;
+
+if (!n) {
+  return new Response('No encontrada', { status: 404 });
+}
+
+const parrafos = String(n.cuerpo)
+  .split(/\n\s*\n/)
+  .map((p: string) => p.trim())
+  .filter(Boolean);
+---
+
+<Layout title={n.titulo} description={n.resumen}>
+  <section class="page-hero">
+    <h1><span>{n.titulo}</span></h1>
+    <p>{n.published_at} &middot; {n.tag}</p>
+  </section>
+
+  <section class="section">
+    <div class="content-block">
+      <p style="color:var(--green-700); font-weight:600; font-size:1.05rem;">{n.resumen}</p>
+      {parrafos.map((p: string) => (
+        <p style="color:var(--text-muted); line-height:1.7; margin-bottom:0.8rem;">{p}</p>
+      ))}
+    </div>
+
+    {n.source_url && (
+      <div class="highlight-box">
+        <h3>Fuente</h3>
+        <p><a href={n.source_url} target="_blank" rel="noopener noreferrer">{n.source_title}</a></p>
+      </div>
+    )}
+
+    <a href="/noticias/alertas" style="display:inline-block; margin-top:1rem; font-size:0.9rem;">&larr; Volver a alertas</a>
+  </section>
+</Layout>

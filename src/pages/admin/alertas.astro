@@ -1,0 +1,128 @@
+---
+// Panel de revisión de borradores generados por Gemini. Protegido por token.
+// Acceso:  /admin/alertas?token=<INGEST_SECRET>
+export const prerender = false;
+import Layout from '../../layouts/Layout.astro';
+
+const { env } = Astro.locals.runtime;
+const db = env.DB;
+
+const url = new URL(Astro.request.url);
+let token = url.searchParams.get('token') ?? '';
+
+let mensaje = '';
+
+if (Astro.request.method === 'POST') {
+  const form = await Astro.request.formData();
+  token = (form.get('token') as string) || '';
+  const id = (form.get('id') as string) || '';
+  const action = (form.get('action') as string) || '';
+
+  if (token && token === env.INGEST_SECRET && id) {
+    if (action === 'publish') {
+      await db
+        .prepare("UPDATE alert_news SET status='published', published_at=datetime('now') WHERE id=?")
+        .bind(id)
+        .run();
+      mensaje = 'Noticia publicada.';
+    } else if (action === 'reject') {
+      await db.prepare("UPDATE alert_news SET status='rejected' WHERE id=?").bind(id).run();
+      mensaje = 'Noticia descartada.';
+    }
+  }
+}
+
+const autorizado = token !== '' && token === env.INGEST_SECRET;
+
+let borradores: any[] = [];
+if (autorizado) {
+  const { results } = await db
+    .prepare("SELECT * FROM alert_news WHERE status='draft' ORDER BY created_at DESC")
+    .all();
+  borradores = results as any[];
+}
+---
+
+<Layout title="Revisión de alertas" description="Panel interno de revisión de noticias generadas">
+  <section class="page-hero">
+    <h1>Revisión de <span>borradores</span></h1>
+    <p>Noticias generadas automáticamente desde Google Alerts</p>
+  </section>
+
+  <section class="section">
+    {!autorizado && (
+      <div class="content-block">
+        <p>Introduce el token de acceso.</p>
+        <form method="GET" style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+          <input type="password" name="token" placeholder="Token" style="flex:1; padding:0.6rem 0.8rem; border:2px solid var(--green-100); border-radius:6px;" />
+          <button type="submit" class="btn-primary">Entrar</button>
+        </form>
+      </div>
+    )}
+
+    {autorizado && (
+      <>
+        {mensaje && <div class="highlight-box"><p>{mensaje}</p></div>}
+
+        {borradores.length === 0 && (
+          <div class="highlight-box"><h3>Sin borradores</h3><p>No hay noticias pendientes de revisión.</p></div>
+        )}
+
+        {borradores.map((n) => (
+          <div class="content-block" style="margin-bottom:1.2rem;">
+            <div style="display:flex; gap:0.6rem; align-items:center; margin-bottom:0.4rem;">
+              <span style="font-size:1.6rem;">{n.emoji}</span>
+              <span class="card-tag">{n.tag}</span>
+            </div>
+            <h3 style="color:var(--green-900);">{n.titulo}</h3>
+            <p style="color:var(--green-700); font-weight:600;">{n.resumen}</p>
+            <p style="white-space:pre-wrap; color:var(--text-muted); line-height:1.7;">{n.cuerpo}</p>
+            {n.source_url && (
+              <p style="font-size:0.8rem;">Fuente: <a href={n.source_url} target="_blank" rel="noopener noreferrer">{n.source_title}</a></p>
+            )}
+            <div style="display:flex; gap:0.8rem; margin-top:0.8rem;">
+              <form method="POST">
+                <input type="hidden" name="token" value={token} />
+                <input type="hidden" name="id" value={n.id} />
+                <input type="hidden" name="action" value="publish" />
+                <button type="submit" class="btn-primary">Publicar</button>
+              </form>
+              <form method="POST">
+                <input type="hidden" name="token" value={token} />
+                <input type="hidden" name="id" value={n.id} />
+                <input type="hidden" name="action" value="reject" />
+                <button type="submit" class="btn-reject">Descartar</button>
+              </form>
+            </div>
+          </div>
+        ))}
+      </>
+    )}
+  </section>
+</Layout>
+
+<style>
+  .btn-primary {
+    display: inline-block;
+    background: var(--green-700);
+    color: var(--white);
+    padding: 0.6rem 1.3rem;
+    border: none;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+  .btn-primary:hover { background: var(--green-900); }
+  .btn-reject {
+    display: inline-block;
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 0.6rem 1.3rem;
+    border: 2px solid #ef4444;
+    border-radius: var(--radius);
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+</style>

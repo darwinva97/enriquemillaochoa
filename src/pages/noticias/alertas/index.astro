@@ -1,0 +1,41 @@
+---
+export const prerender = false;
+import Layout from '../../../layouts/Layout.astro';
+
+const { env } = Astro.locals.runtime;
+const { results } = await env.DB.prepare(
+  "SELECT id, titulo, resumen, tag, emoji, published_at FROM alert_news WHERE status='published' ORDER BY published_at DESC",
+).all();
+const noticias = results as any[];
+---
+
+<Layout title="Alertas" description="Novedades recientes sobre Enrique Milla Ochoa detectadas automáticamente">
+  <section class="page-hero">
+    <h1>Alertas de <span>Enrique Milla Ochoa</span></h1>
+    <p>Novedades recientes detectadas en la web y redactadas para el portal</p>
+  </section>
+
+  <section class="section">
+    <a href="/noticias" style="display:inline-block; margin-bottom:1rem; font-size:0.9rem;">&larr; Volver a noticias</a>
+
+    {noticias.length === 0 && (
+      <div class="highlight-box"><h3>Aún no hay alertas publicadas</h3><p>Vuelve pronto.</p></div>
+    )}
+
+    <div class="cards-grid">
+      {noticias.map((n) => (
+        <a href={`/noticias/alertas/${n.id}`} class="card" style="text-decoration:none; color:inherit;">
+          <div class="card-img">{n.emoji}</div>
+          <div class="card-body">
+            <h3>{n.titulo}</h3>
+            <p>{n.resumen}</p>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.6rem;">
+              <span class="card-tag">{n.tag}</span>
+              <span style="font-size:0.78rem; color:var(--text-muted);">{n.published_at}</span>
+            </div>
+          </div>
+        </a>
+      ))}
+    </div>
+  </section>
+</Layout>
