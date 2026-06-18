@@ -44,6 +44,15 @@ function tag(xml: string, name: string): string {
   return m ? m[1].trim() : '';
 }
 
+// Nombre de medio aproximado a partir del host (ej. "rpp.pe" -> "rpp.pe").
+function hostnameDe(href: string): string {
+  try {
+    return new URL(href).hostname.replace(/^www\./, '');
+  } catch {
+    return href;
+  }
+}
+
 // Google Alerts envuelve el enlace real en un redirect: .../url?...&url=REAL&...
 function unwrapGoogleUrl(href: string): string {
   try {
@@ -131,7 +140,7 @@ export async function ingestAlerts(
         url: entry.link,
       });
 
-      await db
+      const ins = await db
         .prepare(
           `INSERT INTO alert_news (guid, source_url, source_title, titulo, resumen, cuerpo, tag, emoji, status)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft')`,
@@ -147,6 +156,17 @@ export async function ingestAlerts(
           art.emoji,
         )
         .run();
+
+      // Registra la fuente también en alert_sources (modelo multi-fuente).
+      const alertId = ins.meta?.last_row_id;
+      if (alertId && entry.link) {
+        await db
+          .prepare(
+            `INSERT OR IGNORE INTO alert_sources (alert_id, fuente, url, titulo) VALUES (?, ?, ?, ?)`,
+          )
+          .bind(alertId, hostnameDe(entry.link), entry.link, entry.title)
+          .run();
+      }
 
       result.nuevos++;
       result.detalles.push(`OK: ${art.titulo}`);

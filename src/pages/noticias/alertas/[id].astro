@@ -15,6 +15,12 @@ if (!n) {
   return new Response('No encontrada', { status: 404 });
 }
 
+const { results: fuentes } = await env.DB.prepare(
+  'SELECT fuente, url, titulo FROM alert_sources WHERE alert_id=? ORDER BY id',
+)
+  .bind(id)
+  .all();
+
 const parrafos = String(n.cuerpo)
   .split(/\n\s*\n/)
   .map((p: string) => p.trim())
@@ -35,7 +41,19 @@ const parrafos = String(n.cuerpo)
       ))}
     </div>
 
-    {n.source_url && (
+    {fuentes.length > 0 ? (
+      <div class="highlight-box">
+        <h3>{fuentes.length === 1 ? 'Fuente' : `Fuentes (${fuentes.length})`}</h3>
+        <ul style="margin:0; padding-left:1.1rem; line-height:1.8;">
+          {fuentes.map((f: any) => (
+            <li>
+              <a href={f.url} target="_blank" rel="noopener noreferrer">{f.titulo || f.url}</a>
+              {f.fuente && <span style="color:var(--text-muted);"> &middot; {f.fuente}</span>}
+            </li>
+          ))}
+        </ul>
+      </div>
+    ) : n.source_url && (
       <div class="highlight-box">
         <h3>Fuente</h3>
         <p><a href={n.source_url} target="_blank" rel="noopener noreferrer">{n.source_title}</a></p>
