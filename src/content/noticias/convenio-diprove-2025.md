@@ -9,8 +9,8 @@ emoji: "🚔"
 resumen: "La municipalidad firmo un acuerdo con la Division de Prevencion e Investigacion de Robo de Vehiculos de la PNP para reforzar la seguridad en todo el distrito."
 cardImage: "/img/noticias/convenio-diprove-2025.webp"
 bannerImage: "/img/noticias/convenio-diprove-2025.webp"
-imageCredit: "Foto: Municipalidad de Los Olivos"
-imageCreditUrl: "https://www.gob.pe/munilosolivos"
+imageCredit: "Foto: Juan Daniel Chumbe Zapata / Wikimedia Commons (CC BY-SA 4.0)"
+imageCreditUrl: "https://commons.wikimedia.org/wiki/File:Polic%C3%ADa_Nacional_del_Per%C3%BA,_Divisi%C3%B3n_de_protecci%C3%B3n_de_carreteras.jpg"
 ---
 
 En febrero de 2025, la **Municipalidad de Los Olivos** anuncio la firma de un convenio de cooperacion interinstitucional con la **Division de Prevencion e Investigacion de Robo de Vehiculos (DIPROVE Norte)** de la Policia Nacional del Peru.

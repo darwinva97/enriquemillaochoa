@@ -2,55 +2,11 @@
 // Vista unificada de noticias: artículos editoriales (colección de contenido)
 // + alertas publicadas (D1), con imagen, filtro por categoría y buscador.
 export const prerender = false;
-import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
+import { getNoticias } from '../../lib/noticias';
 
-interface Card {
-  slug: string;
-  titulo: string;
-  resumen: string;
-  tag: string;
-  emoji: string;
-  fecha: Date;
-  fuente?: string;
-  image?: string;
-  origen: 'Editorial' | 'Alerta';
-}
-
-// 1) Editoriales (markdown)
-const editoriales: Card[] = (await getCollection('noticias')).map((n) => ({
-  slug: n.id.replace(/\.md$/, ''),
-  titulo: n.data.titulo,
-  resumen: n.data.resumen,
-  tag: n.data.tag,
-  emoji: n.data.emoji,
-  fecha: n.data.fecha,
-  fuente: n.data.fuente,
-  image: n.data.cardImage,
-  origen: 'Editorial',
-}));
-
-// 2) Alertas publicadas (D1)
 const { env } = Astro.locals.runtime;
-const { results } = await env.DB.prepare(
-  `SELECT slug, titulo, resumen, tag, emoji, image_card, published_at
-     FROM alert_news WHERE status='published' AND slug IS NOT NULL`,
-).all();
-// SQLite devuelve 'YYYY-MM-DD HH:MM:SS' (UTC); lo normalizamos a ISO.
-const parseFecha = (s?: string) => new Date(s ? s.replace(' ', 'T') + 'Z' : Date.now());
-
-const alertas: Card[] = (results as any[]).map((n) => ({
-  slug: n.slug,
-  titulo: n.titulo,
-  resumen: n.resumen,
-  tag: n.tag,
-  emoji: n.emoji,
-  fecha: parseFecha(n.published_at),
-  image: n.image_card,
-  origen: 'Alerta',
-}));
-
-const noticias = [...editoriales, ...alertas].sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
+const noticias = await getNoticias(env.DB);
 
 // Categorías para el filtro
 const tags = Array.from(new Set(noticias.map((n) => n.tag))).sort();
@@ -82,6 +38,7 @@ const fmtFecha = (d: Date) =>
       </div>
     </div>
 
+    <p class="conteo" id="conteo">{noticias.length} noticias</p>
     <p id="sin-resultados" class="sin-resultados" hidden>No se encontraron noticias para tu búsqueda.</p>
 
     <div class="cards-grid" id="grid">
@@ -162,12 +119,21 @@ const fmtFecha = (d: Date) =>
     padding: 0.18rem 0.5rem;
     border-radius: 4px;
   }
+  .conteo {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    margin: -0.6rem 0 1rem;
+  }
   .sin-resultados {
     text-align: center;
     color: var(--text-muted);
     padding: 2rem 0;
     font-size: 1rem;
   }
+
+  /* Zoom suave de la imagen al pasar el cursor */
+  .card-img img { transition: transform 0.45s ease; }
+  .card:hover .card-img img { transform: scale(1.06); }
 </style>
 
 <script>
@@ -175,6 +141,8 @@ const fmtFecha = (d: Date) =>
   const filtros = document.getElementById('filtros') as HTMLElement;
   const cards = Array.from(document.querySelectorAll<HTMLElement>('.noticia'));
   const sinResultados = document.getElementById('sin-resultados') as HTMLElement;
+  const conteo = document.getElementById('conteo') as HTMLElement;
+  const total = cards.length;
   let tagActivo = '';
 
   function aplicar() {
@@ -188,6 +156,8 @@ const fmtFecha = (d: Date) =>
       if (mostrar) visibles++;
     }
     sinResultados.hidden = visibles !== 0;
+    const filtrando = q !== '' || tagActivo !== '';
+    conteo.textContent = filtrando ? `Mostrando ${visibles} de ${total} noticias` : `${total} noticias`;
   }
 
   buscador.addEventListener('input', aplicar);

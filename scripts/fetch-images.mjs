@@ -45,6 +45,28 @@ const OVERRIDES = {
     credit: 'Foto: Anzenarturo / Wikimedia Commons (CC BY-SA 3.0)',
     creditUrl: 'https://commons.wikimedia.org/wiki/File:Plaza_de_armas_de_los_olivos_,Lima_,Per%C3%BA.jpg',
   },
+  // Las 4 noticias municipales comparten un og:image institucional genérico;
+  // las sustituimos por imágenes temáticas y distintas de Wikimedia Commons.
+  'alcalde-premio-internacional-2024': {
+    url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Los_Olivos.jpg/1280px-Los_Olivos.jpg',
+    credit: 'Foto: Jonathan Marco Corredor Obispo / Wikimedia Commons (CC BY-SA 4.0)',
+    creditUrl: 'https://commons.wikimedia.org/wiki/File:Los_Olivos.jpg',
+  },
+  'clinica-veterinaria-patitas-2025': {
+    url: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Hospital_Veterinario_Oasis_en_Lima_Per%C3%BA_%288%29.jpg',
+    credit: 'Foto: Bella Atenea Arias Vasquez / Wikimedia Commons (CC BY-SA 4.0)',
+    creditUrl: 'https://commons.wikimedia.org/wiki/File:Hospital_Veterinario_Oasis_en_Lima_Per%C3%BA_(8).jpg',
+  },
+  'convenio-diprove-2025': {
+    url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8c/Polic%C3%ADa_Nacional_del_Per%C3%BA%2C_Divisi%C3%B3n_de_protecci%C3%B3n_de_carreteras.jpg/1280px-Polic%C3%ADa_Nacional_del_Per%C3%BA%2C_Divisi%C3%B3n_de_protecci%C3%B3n_de_carreteras.jpg',
+    credit: 'Foto: Juan Daniel Chumbe Zapata / Wikimedia Commons (CC BY-SA 4.0)',
+    creditUrl: 'https://commons.wikimedia.org/wiki/File:Polic%C3%ADa_Nacional_del_Per%C3%BA,_Divisi%C3%B3n_de_protecci%C3%B3n_de_carreteras.jpg',
+  },
+  'parque-leon-dormido-2025': {
+    url: 'https://upload.wikimedia.org/wikipedia/commons/0/04/Laguna_parque_expo_lima.jpg',
+    credit: 'Foto: Parque de la Exposición, Lima / Wikimedia Commons (dominio público)',
+    creditUrl: 'https://commons.wikimedia.org/wiki/File:Laguna_parque_expo_lima.jpg',
+  },
 };
 
 function decode(s) {
