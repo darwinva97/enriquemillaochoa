@@ -1,4 +1,9 @@
 ---
+// Fuentes autohospedadas (sin dependencia de Google Fonts): solo el eje de
+// peso; el navegador descarga únicamente el subset latin por unicode-range.
+import '@fontsource-variable/inter/wght.css';
+import '@fontsource-variable/plus-jakarta-sans/wght.css';
+
 interface Props {
   title: string;
   description?: string;
@@ -38,14 +43,6 @@ const navLinks = [
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href={Astro.url.href} />
     <title>{tituloCompleto}</title>
-
-    <!-- Tipografía -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap"
-    />
 
     <!-- Open Graph -->
     <meta property="og:type" content={type} />

@@ -2,6 +2,7 @@
   "name": "enrique-milla-ochoa",
   "type": "module",
   "version": "1.0.0",
+  "packageManager": "pnpm@9.12.0",
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
@@ -11,14 +12,16 @@
     "postinstall": "node scripts/fix-libsodium.mjs"
   },
   "dependencies": {
-    "astro": "^5.7.10",
-    "@astrojs/cloudflare": "^12.3.0",
     "@astrojs/check": "^0.9.0",
-    "alchemy": "^0.28.0"
+    "@astrojs/cloudflare": "^12.3.0",
+    "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource-variable/plus-jakarta-sans": "^5.2.8",
+    "alchemy": "^0.28.0",
+    "astro": "^5.7.10"
   },
   "devDependencies": {
-    "@types/node": "^22.0.0",
     "@cloudflare/workers-types": "^4.0.0",
+    "@types/node": "^22.0.0",
     "tsx": "^4.0.0",
     "wrangler": "^4.0.0"
   }
