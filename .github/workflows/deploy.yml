@@ -19,8 +19,6 @@ jobs:
           # Credenciales de Cloudflare que necesita Alchemy
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          # Token del estado remoto de Alchemy (CloudflareStateStore)
-          ALCHEMY_STATE_TOKEN: ${{ secrets.ALCHEMY_STATE_TOKEN }}
           # Variables de la aplicación (las consume alchemy.run.ts vía process.env)
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           INGEST_SECRET: ${{ secrets.INGEST_SECRET }}

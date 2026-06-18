@@ -1,12 +1,8 @@
 import alchemy from "alchemy";
-import { Astro, D1Database, CustomDomain, Worker, DOStateStore } from "alchemy/cloudflare";
+import { Astro, D1Database, CustomDomain, Worker } from "alchemy/cloudflare";
 
 const app = await alchemy("enrique-milla-ochoa", {
   stage: "prod",
-  // Estado remoto en un Worker de Cloudflare (Durable Objects) para que persista
-  // entre ejecuciones de CI/CD. Toma ALCHEMY_STATE_TOKEN y las credenciales de
-  // Cloudflare (CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID) del entorno.
-  stateStore: (scope) => new DOStateStore(scope),
 });
 
 const database = await D1Database("forum-db", {
