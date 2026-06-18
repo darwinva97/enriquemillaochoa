@@ -15,6 +15,13 @@ export const website = await Astro("website", {
   name: "enrique-milla-ochoa",
   command: "npx astro build",
   adopt: true,
+  // El sitio es SSR (output: 'server'). El default de Alchemy
+  // (not_found_handling: "single-page-application") impediría que las rutas
+  // dinámicas lleguen al worker; "none" hace que las peticiones sin asset
+  // estático caigan al worker SSR (/foros, /api/*, /noticias/alertas, ...).
+  assets: {
+    not_found_handling: "none",
+  },
   bindings: {
     DB: database,
     GEMINI_API_KEY: alchemy.secret(process.env.GEMINI_API_KEY),
