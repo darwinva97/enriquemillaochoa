@@ -7,7 +7,8 @@
     "build": "astro build",
     "preview": "astro preview",
     "deploy": "tsx alchemy.run.ts",
-    "destroy": "ALCHEMY_PHASE=destroy tsx alchemy.run.ts"
+    "destroy": "ALCHEMY_PHASE=destroy tsx alchemy.run.ts",
+    "postinstall": "node scripts/fix-libsodium.mjs"
   },
   "dependencies": {
     "astro": "^5.7.10",
