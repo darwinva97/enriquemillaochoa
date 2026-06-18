@@ -1,65 +1,12 @@
 ---
+// Ruta antigua por id numérico. Redirige al nuevo slug dentro de /noticias.
 export const prerender = false;
-import Layout from '../../../layouts/Layout.astro';
-
 const { env } = Astro.locals.runtime;
 const { id } = Astro.params;
 
-const n = (await env.DB.prepare(
-  "SELECT * FROM alert_news WHERE id=? AND status='published'",
-)
+const row = (await env.DB.prepare("SELECT slug FROM alert_news WHERE id=? AND status='published'")
   .bind(id)
-  .first()) as any;
+  .first()) as { slug?: string } | null;
 
-if (!n) {
-  return new Response('No encontrada', { status: 404 });
-}
-
-const { results: fuentes } = await env.DB.prepare(
-  'SELECT fuente, url, titulo FROM alert_sources WHERE alert_id=? ORDER BY id',
-)
-  .bind(id)
-  .all();
-
-const parrafos = String(n.cuerpo)
-  .split(/\n\s*\n/)
-  .map((p: string) => p.trim())
-  .filter(Boolean);
+return Astro.redirect(row?.slug ? `/noticias/${row.slug}` : '/noticias', 301);
 ---
-
-<Layout title={n.titulo} description={n.resumen}>
-  <section class="page-hero">
-    <h1><span>{n.titulo}</span></h1>
-    <p>{n.published_at} &middot; {n.tag}</p>
-  </section>
-
-  <section class="section">
-    <div class="content-block">
-      <p style="color:var(--green-700); font-weight:600; font-size:1.05rem;">{n.resumen}</p>
-      {parrafos.map((p: string) => (
-        <p style="color:var(--text-muted); line-height:1.7; margin-bottom:0.8rem;">{p}</p>
-      ))}
-    </div>
-
-    {fuentes.length > 0 ? (
-      <div class="highlight-box">
-        <h3>{fuentes.length === 1 ? 'Fuente' : `Fuentes (${fuentes.length})`}</h3>
-        <ul style="margin:0; padding-left:1.1rem; line-height:1.8;">
-          {fuentes.map((f: any) => (
-            <li>
-              <a href={f.url} target="_blank" rel="noopener noreferrer">{f.titulo || f.url}</a>
-              {f.fuente && <span style="color:var(--text-muted);"> &middot; {f.fuente}</span>}
-            </li>
-          ))}
-        </ul>
-      </div>
-    ) : n.source_url && (
-      <div class="highlight-box">
-        <h3>Fuente</h3>
-        <p><a href={n.source_url} target="_blank" rel="noopener noreferrer">{n.source_title}</a></p>
-      </div>
-    )}
-
-    <a href="/noticias/alertas" style="display:inline-block; margin-top:1rem; font-size:0.9rem;">&larr; Volver a alertas</a>
-  </section>
-</Layout>

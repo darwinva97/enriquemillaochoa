@@ -1,49 +1,124 @@
 ---
-export const prerender = true;
+// Detalle unificado: resuelve primero un artículo editorial (colección) y,
+// si no existe, una alerta publicada (D1) por su slug. SSR.
+export const prerender = false;
 import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
+import BannerImage from '../../components/BannerImage.astro';
 
-export async function getStaticPaths() {
-  const noticias = await getCollection('noticias');
-  return noticias.map(entry => ({
-    params: { slug: entry.id.replace(/\.md$/, '') },
-    props: { entry },
-  }));
+const { slug } = Astro.params;
+const { env } = Astro.locals.runtime;
+
+const fmtFecha = (d: Date) =>
+  d.toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' });
+
+// 1) ¿Artículo editorial?
+const entry = (await getCollection('noticias')).find((e) => e.id.replace(/\.md$/, '') === slug);
+
+// 2) Si no, ¿alerta publicada?
+let alerta: any = null;
+let fuentes: any[] = [];
+if (!entry) {
+  alerta = await env.DB.prepare("SELECT * FROM alert_news WHERE slug=? AND status='published'")
+    .bind(slug)
+    .first();
+  if (alerta) {
+    const { results } = await env.DB.prepare(
+      'SELECT fuente, url, titulo FROM alert_sources WHERE alert_id=? ORDER BY id',
+    )
+      .bind(alerta.id)
+      .all();
+    fuentes = results as any[];
+  }
 }
 
-const { entry } = Astro.props;
-const { Content } = await render(entry);
+if (!entry && !alerta) {
+  return new Response('No encontrada', { status: 404 });
+}
 
-const fechaFormateada = entry.data.fecha.toLocaleDateString('es-PE', {
-  year: 'numeric',
-  month: 'long',
-  day: 'numeric',
-});
+// Datos comunes para el encabezado/banner
+const data = entry
+  ? {
+      titulo: entry.data.titulo,
+      tag: entry.data.tag,
+      resumen: entry.data.resumen,
+      fecha: fmtFecha(entry.data.fecha),
+      meta: `${fmtFecha(entry.data.fecha)} · ${entry.data.tag} · Por ${entry.data.autor}`,
+      banner: entry.data.bannerImage,
+      credit: entry.data.imageCredit,
+      creditUrl: entry.data.imageCreditUrl,
+    }
+  : {
+      titulo: alerta.titulo,
+      tag: alerta.tag,
+      resumen: alerta.resumen,
+      fecha: alerta.published_at,
+      meta: `${
+        alerta.published_at ? fmtFecha(new Date(String(alerta.published_at).replace(' ', 'T') + 'Z')) : ''
+      } · ${alerta.tag}`,
+      banner: alerta.image_banner,
+      credit: alerta.image_credit,
+      creditUrl: alerta.image_credit_url,
+    };
+
+const Content = entry ? (await render(entry)).Content : null;
+const parrafos = alerta
+  ? String(alerta.cuerpo)
+      .split(/\n\s*\n/)
+      .map((p: string) => p.trim())
+      .filter(Boolean)
+  : [];
 ---
 
-<Layout title={entry.data.titulo} description={entry.data.resumen}>
-  <section class="page-hero">
-    <h1><span>{entry.data.titulo}</span></h1>
-    <p>{fechaFormateada} &middot; {entry.data.tag} &middot; Por {entry.data.autor}</p>
+<Layout title={data.titulo} description={data.resumen}>
+  {data.banner && (
+    <BannerImage src={data.banner} alt={data.titulo} credit={data.credit} creditUrl={data.creditUrl} />
+  )}
+
+  <section class="page-hero" style={data.banner ? 'padding-top:1.5rem;' : ''}>
+    <h1><span>{data.titulo}</span></h1>
+    <p>{data.meta}</p>
   </section>
 
   <section class="section">
-    <div class="content-block article-content">
-      <Content />
-    </div>
+    {Content ? (
+      <div class="content-block article-content">
+        <Content />
+      </div>
+    ) : (
+      <div class="content-block">
+        <p style="color:var(--green-700); font-weight:600; font-size:1.05rem;">{data.resumen}</p>
+        {parrafos.map((p: string) => (
+          <p style="color:var(--text-muted); line-height:1.7; margin-bottom:0.8rem;">{p}</p>
+        ))}
+      </div>
+    )}
 
-    {entry.data.fuente && (
+    {/* Fuentes: editorial (una) o alerta (varias) */}
+    {entry && entry.data.fuente && (
       <div class="highlight-box">
         <h3>Fuente</h3>
         <p>
           {entry.data.fuenteUrl ? (
-            <a href={entry.data.fuenteUrl} target="_blank" rel="noopener noreferrer">
-              {entry.data.fuente}
-            </a>
+            <a href={entry.data.fuenteUrl} target="_blank" rel="noopener noreferrer">{entry.data.fuente}</a>
           ) : (
             entry.data.fuente
           )}
         </p>
+      </div>
+    )}
+
+    {fuentes.length > 0 && (
+      <div class="highlight-box">
+        <h3>{fuentes.length === 1 ? 'Fuente' : `Fuentes (${fuentes.length})`}</h3>
+        <ul style="margin:0; padding-left:1.1rem; line-height:1.8;">
+          {fuentes.map((f: any) => (
+            <li>
+              <a href={f.url} target="_blank" rel="noopener noreferrer">{f.titulo || f.url}</a>
+              {f.fuente && <span style="color:var(--text-muted);"> &middot; {f.fuente}</span>}
+            </li>
+          ))}
+        </ul>
       </div>
     )}
 
@@ -52,37 +127,11 @@ const fechaFormateada = entry.data.fecha.toLocaleDateString('es-PE', {
 </Layout>
 
 <style>
-  .article-content :global(h2) {
-    color: var(--green-900);
-    font-size: 1.3rem;
-    margin-top: 1.5rem;
-    margin-bottom: 0.5rem;
-  }
-  .article-content :global(h3) {
-    color: var(--green-700);
-    font-size: 1.1rem;
-    margin-top: 1.2rem;
-    margin-bottom: 0.4rem;
-  }
-  .article-content :global(p) {
-    color: var(--text-muted);
-    margin-bottom: 0.8rem;
-    line-height: 1.7;
-  }
-  .article-content :global(ul),
-  .article-content :global(ol) {
-    color: var(--text-muted);
-    padding-left: 1.5rem;
-    margin-bottom: 1rem;
-  }
-  .article-content :global(li) {
-    margin-bottom: 0.4rem;
-    line-height: 1.6;
-  }
-  .article-content :global(strong) {
-    color: var(--text-dark);
-  }
-  .article-content :global(em) {
-    color: var(--green-700);
-  }
+  .article-content :global(h2) { color: var(--green-900); font-size: 1.3rem; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+  .article-content :global(h3) { color: var(--green-700); font-size: 1.1rem; margin-top: 1.2rem; margin-bottom: 0.4rem; }
+  .article-content :global(p) { color: var(--text-muted); margin-bottom: 0.8rem; line-height: 1.7; }
+  .article-content :global(ul), .article-content :global(ol) { color: var(--text-muted); padding-left: 1.5rem; margin-bottom: 1rem; }
+  .article-content :global(li) { margin-bottom: 0.4rem; line-height: 1.6; }
+  .article-content :global(strong) { color: var(--text-dark); }
+  .article-content :global(em) { color: var(--green-700); }
 </style>

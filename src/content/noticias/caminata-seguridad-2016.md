@@ -7,6 +7,8 @@ fuenteUrl: "https://www.munilosolivos.gob.pe/muni1/index.php/servicios/operacion
 tag: "Seguridad"
 emoji: "🚶"
 resumen: "Cientos de vecinos marcharon junto al alcalde Pedro del Rosario para recuperar calles y combatir la inseguridad en el asentamiento."
+cardImage: "/img/noticias/caminata-seguridad-2016.svg"
+bannerImage: "/img/noticias/caminata-seguridad-2016.svg"
 ---
 
 El **2 de mayo de 2016**, el entonces alcalde de Los Olivos, **Pedro del Rosario**, encabezo una caminata masiva por las calles del AA.HH. Enrique Milla Ochoa, acompanado de cientos de vecinos del asentamiento, asi como de residentes de los asentamientos vecinos Laura Caller y San Martin de Porres.

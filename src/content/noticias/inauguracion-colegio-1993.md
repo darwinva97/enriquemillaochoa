@@ -7,6 +7,10 @@ fuenteUrl: "http://enriquemillaochoa.blogspot.com/p/historia-de-la-ie-enrique-mi
 tag: "Historia"
 emoji: "🏫"
 resumen: "El 22 de octubre de 1993, el presidente Alberto Fujimori inauguro el colegio del asentamiento, construido por INFES en solo 8 meses sobre un terreno de 3,500 m2."
+cardImage: "/img/noticias/inauguracion-colegio-1993.jpg"
+bannerImage: "/img/noticias/inauguracion-colegio-1993.jpg"
+imageCredit: "Foto: Blog I.E. Enrique Milla Ochoa"
+imageCreditUrl: "http://enriquemillaochoa.blogspot.com/p/historia-de-la-ie-enrique-milla-ochoa.html"
 ---
 
 El **22 de octubre de 1993** marca una fecha historica para el AA.HH. Enrique Milla Ochoa: ese dia, el entonces presidente de la Republica, **Alberto Fujimori Fujimori**, inauguro oficialmente la **Institucion Educativa Enrique Milla Ochoa**.

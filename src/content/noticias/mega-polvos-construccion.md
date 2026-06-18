@@ -6,6 +6,8 @@ fuente: "Medios locales"
 tag: "Economia"
 emoji: "🏗️"
 resumen: "Con una inversion de S/300 millones y mas de 1,500 tiendas, Mega Polvos sera el primer megamall ubicado propiamente dentro del distrito de Los Olivos."
+cardImage: "/img/noticias/mega-polvos-construccion.svg"
+bannerImage: "/img/noticias/mega-polvos-construccion.svg"
 ---
 
 Una de las noticias que mas expectativa genera entre los vecinos de Los Olivos es la construccion de **Mega Polvos**, un ambicioso proyecto comercial que se levanta en la **cuadra 57 de la Avenida Alfredo Mendiola**, en la interseccion con la **Avenida Universitaria**.

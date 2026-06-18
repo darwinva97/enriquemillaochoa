@@ -11,7 +11,11 @@ const noticias = defineCollection({
     tag: z.string(),
     emoji: z.string(),
     resumen: z.string(),
-    imagen: z.string().optional(),
+    // Imagen de portada (banner) y de tarjeta; pueden ser la misma.
+    cardImage: z.string().optional(),
+    bannerImage: z.string().optional(),
+    imageCredit: z.string().optional(),
+    imageCreditUrl: z.string().url().optional(),
   }),
 });
 

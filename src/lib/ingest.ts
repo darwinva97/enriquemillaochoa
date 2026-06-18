@@ -1,6 +1,7 @@
 // Ingesta de Google Alerts (feed RSS/Atom): descarga, deduplica contra D1,
 // genera el artículo con Gemini y lo guarda como borrador.
 import { generarArticulo } from './gemini';
+import { slugUnico } from './slug';
 
 interface FeedEntry {
   guid: string;
@@ -90,22 +91,37 @@ export function parseFeed(xml: string): FeedEntry[] {
   return entries;
 }
 
-// Intenta obtener el texto completo del artículo enlazado; si falla, usa el snippet.
-async function obtenerTexto(entry: FeedEntry): Promise<string> {
+// Extrae la URL de og:image (o twitter:image) del HTML de una página.
+function extraerOgImage(html: string): string {
+  for (const re of [
+    /<meta[^>]+property=["']og:image(?::secure_url)?["'][^>]*content=["']([^"']+)["']/i,
+    /<meta[^>]+content=["']([^"']+)["'][^>]*property=["']og:image["']/i,
+    /<meta[^>]+name=["']twitter:image["'][^>]*content=["']([^"']+)["']/i,
+  ]) {
+    const m = html.match(re);
+    if (m) return decodeEntities(m[1].trim());
+  }
+  return '';
+}
+
+// Intenta obtener el texto completo y la imagen del artículo enlazado;
+// si falla, usa el snippet del feed.
+async function obtenerContenido(entry: FeedEntry): Promise<{ texto: string; ogImage: string }> {
   const snippet = stripHtml(entry.summaryHtml);
-  if (!entry.link) return snippet;
+  if (!entry.link) return { texto: snippet, ogImage: '' };
   try {
     const res = await fetch(entry.link, {
       headers: { 'user-agent': 'Mozilla/5.0 (compatible; EnriqueMillaBot/1.0)' },
       signal: AbortSignal.timeout(8000),
     });
-    if (!res.ok) return snippet;
+    if (!res.ok) return { texto: snippet, ogImage: '' };
     const html = await res.text();
+    const ogImage = extraerOgImage(html);
     const body = html.match(/<body[\s\S]*?<\/body>/i)?.[0] ?? html;
     const texto = stripHtml(body).slice(0, 6000);
-    return texto.length > snippet.length ? texto : snippet;
+    return { texto: texto.length > snippet.length ? texto : snippet, ogImage };
   } catch {
-    return snippet;
+    return { texto: snippet, ogImage: '' };
   }
 }
 
@@ -133,20 +149,26 @@ export async function ingestAlerts(
     if (existe) continue;
 
     try {
-      const texto = await obtenerTexto(entry);
+      const { texto, ogImage } = await obtenerContenido(entry);
       const art = await generarArticulo(geminiApiKey, {
         titulo: entry.title,
         texto,
         url: entry.link,
       });
 
+      const slug = await slugUnico(db, art.titulo);
+      // Para alertas ingeridas usamos la imagen remota de la fuente (og:image)
+      // con su crédito; las noticias curadas usan imágenes locales en /public.
+      const credito = ogImage ? `Foto: ${hostnameDe(entry.link)}` : null;
+
       const ins = await db
         .prepare(
-          `INSERT INTO alert_news (guid, source_url, source_title, titulo, resumen, cuerpo, tag, emoji, status)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'draft')`,
+          `INSERT INTO alert_news (guid, slug, source_url, source_title, titulo, resumen, cuerpo, tag, emoji, image_card, image_banner, image_credit, image_credit_url, status)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'draft')`,
         )
         .bind(
           entry.guid,
+          slug,
           entry.link,
           entry.title,
           art.titulo,
@@ -154,6 +176,10 @@ export async function ingestAlerts(
           art.cuerpo,
           art.tag,
           art.emoji,
+          ogImage || null,
+          ogImage || null,
+          credito,
+          ogImage ? entry.link : null,
         )
         .run();
 

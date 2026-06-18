@@ -7,6 +7,10 @@ fuenteUrl: "https://www.gob.pe/munilosolivos"
 tag: "Servicios"
 emoji: "🐾"
 resumen: "Los Olivos cuenta con una nueva clinica veterinaria municipal que ofrece atencion basica gratuita para mascotas de familias del distrito."
+cardImage: "/img/noticias/clinica-veterinaria-patitas-2025.png"
+bannerImage: "/img/noticias/clinica-veterinaria-patitas-2025.png"
+imageCredit: "Foto: Municipalidad de Los Olivos"
+imageCreditUrl: "https://www.gob.pe/munilosolivos"
 ---
 
 La **Municipalidad de Los Olivos** inauguro en febrero de 2025 la clinica veterinaria municipal **"Patitas Olivenses"**, un servicio gratuito para los vecinos del distrito que necesiten atencion veterinaria basica para sus mascotas.

@@ -1,0 +1,48 @@
+---
+// Banner de portada de una noticia, con caption de crédito a la fuente.
+interface Props {
+  src: string;
+  alt: string;
+  credit?: string | null;
+  creditUrl?: string | null;
+}
+const { src, alt, credit, creditUrl } = Astro.props;
+---
+
+<figure class="banner">
+  <img src={src} alt={alt} width="1200" height="630" />
+  {credit && (
+    <figcaption>
+      {creditUrl ? (
+        <a href={creditUrl} target="_blank" rel="noopener noreferrer">{credit}</a>
+      ) : (
+        credit
+      )}
+    </figcaption>
+  )}
+</figure>
+
+<style>
+  .banner {
+    margin: 0;
+    max-width: 960px;
+    margin-inline: auto;
+    padding: 1.5rem 1.5rem 0;
+  }
+  .banner img {
+    width: 100%;
+    height: auto;
+    max-height: 420px;
+    object-fit: cover;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: block;
+  }
+  .banner figcaption {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    text-align: right;
+    margin-top: 0.4rem;
+  }
+  .banner figcaption a { color: var(--text-muted); }
+</style>

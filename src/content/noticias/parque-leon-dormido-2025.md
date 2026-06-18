@@ -7,6 +7,10 @@ fuenteUrl: "https://www.gob.pe/munilosolivos"
 tag: "Obras"
 emoji: "🌳"
 resumen: "El parque Leon Dormido fue renovado con nuevas areas verdes, mobiliario urbano e iluminacion LED, como parte del plan de mejoramiento de espacios publicos."
+cardImage: "/img/noticias/parque-leon-dormido-2025.png"
+bannerImage: "/img/noticias/parque-leon-dormido-2025.png"
+imageCredit: "Foto: Municipalidad de Los Olivos"
+imageCreditUrl: "https://www.gob.pe/munilosolivos"
 ---
 
 La **Municipalidad de Los Olivos** completo la renovacion integral del **Parque Leon Dormido**, uno de los espacios publicos mas concurridos del distrito. La reinauguracion se realizo en febrero de 2025 con la presencia de vecinos y autoridades municipales.

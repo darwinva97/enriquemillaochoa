@@ -1,36 +1,112 @@
 ---
-export const prerender = true;
+// Vista unificada de noticias: artículos editoriales (colección de contenido)
+// + alertas publicadas (D1), con imagen, filtro por categoría y buscador.
+export const prerender = false;
 import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 
-const noticias = (await getCollection('noticias')).sort(
-  (a, b) => b.data.fecha.getTime() - a.data.fecha.getTime()
-);
+interface Card {
+  slug: string;
+  titulo: string;
+  resumen: string;
+  tag: string;
+  emoji: string;
+  fecha: Date;
+  fuente?: string;
+  image?: string;
+  origen: 'Editorial' | 'Alerta';
+}
+
+// 1) Editoriales (markdown)
+const editoriales: Card[] = (await getCollection('noticias')).map((n) => ({
+  slug: n.id.replace(/\.md$/, ''),
+  titulo: n.data.titulo,
+  resumen: n.data.resumen,
+  tag: n.data.tag,
+  emoji: n.data.emoji,
+  fecha: n.data.fecha,
+  fuente: n.data.fuente,
+  image: n.data.cardImage,
+  origen: 'Editorial',
+}));
+
+// 2) Alertas publicadas (D1)
+const { env } = Astro.locals.runtime;
+const { results } = await env.DB.prepare(
+  `SELECT slug, titulo, resumen, tag, emoji, image_card, published_at
+     FROM alert_news WHERE status='published' AND slug IS NOT NULL`,
+).all();
+// SQLite devuelve 'YYYY-MM-DD HH:MM:SS' (UTC); lo normalizamos a ISO.
+const parseFecha = (s?: string) => new Date(s ? s.replace(' ', 'T') + 'Z' : Date.now());
+
+const alertas: Card[] = (results as any[]).map((n) => ({
+  slug: n.slug,
+  titulo: n.titulo,
+  resumen: n.resumen,
+  tag: n.tag,
+  emoji: n.emoji,
+  fecha: parseFecha(n.published_at),
+  image: n.image_card,
+  origen: 'Alerta',
+}));
+
+const noticias = [...editoriales, ...alertas].sort((a, b) => b.fecha.getTime() - a.fecha.getTime());
+
+// Categorías para el filtro
+const tags = Array.from(new Set(noticias.map((n) => n.tag))).sort();
+
+const fmtFecha = (d: Date) =>
+  d.toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' });
 ---
 
-<Layout title="Noticias" description="Noticias reales sobre el AA.HH. Enrique Milla Ochoa y el distrito de Los Olivos">
+<Layout title="Noticias" description="Noticias y novedades sobre el AA.HH. Enrique Milla Ochoa y el distrito de Los Olivos">
   <section class="page-hero">
     <h1>Noticias de <span>Enrique Milla Ochoa</span></h1>
     <p>Hechos reales y novedades del asentamiento y del distrito de Los Olivos</p>
-    <p style="margin-top:0.8rem;"><a href="/noticias/alertas">Ver alertas recientes &rarr;</a></p>
   </section>
 
   <section class="section">
-    <div class="cards-grid">
-      {noticias.map(n => (
-        <a href={`/noticias/${n.id.replace(/\.md$/, '')}`} class="card" style="text-decoration:none; color:inherit;">
-          <div class="card-img">{n.data.emoji}</div>
-          <div class="card-body">
-            <h3>{n.data.titulo}</h3>
-            <p>{n.data.resumen}</p>
-            {n.data.fuente && (
-              <p style="font-size:0.8rem; color:var(--green-500); margin-top:0.4rem;">Fuente: {n.data.fuente}</p>
+    <div class="noticias-toolbar">
+      <input
+        type="search"
+        id="buscador"
+        placeholder="Buscar noticias…"
+        aria-label="Buscar noticias"
+        autocomplete="off"
+      />
+      <div class="filtros" id="filtros" role="group" aria-label="Filtrar por categoría">
+        <button type="button" class="chip active" data-tag="">Todas</button>
+        {tags.map((t) => (
+          <button type="button" class="chip" data-tag={t}>{t}</button>
+        ))}
+      </div>
+    </div>
+
+    <p id="sin-resultados" class="sin-resultados" hidden>No se encontraron noticias para tu búsqueda.</p>
+
+    <div class="cards-grid" id="grid">
+      {noticias.map((n) => (
+        <a
+          href={`/noticias/${n.slug}`}
+          class="card noticia"
+          data-tag={n.tag}
+          data-text={`${n.titulo} ${n.resumen} ${n.tag} ${n.fuente ?? ''}`.toLowerCase()}
+          style="text-decoration:none; color:inherit;"
+        >
+          <div class="card-img">
+            {n.image ? (
+              <img src={n.image} alt={n.titulo} loading="lazy" width="400" height="180" />
+            ) : (
+              <span style="font-size:3rem;">{n.emoji}</span>
             )}
+            <span class="card-origen">{n.origen}</span>
+          </div>
+          <div class="card-body">
+            <h3>{n.titulo}</h3>
+            <p>{n.resumen}</p>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:0.6rem;">
-              <span class="card-tag">{n.data.tag}</span>
-              <span style="font-size:0.78rem; color:var(--text-muted);">
-                {n.data.fecha.toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' })}
-              </span>
+              <span class="card-tag">{n.tag}</span>
+              <span style="font-size:0.78rem; color:var(--text-muted);">{fmtFecha(n.fecha)}</span>
             </div>
           </div>
         </a>
@@ -38,3 +114,88 @@ const noticias = (await getCollection('noticias')).sort(
     </div>
   </section>
 </Layout>
+
+<style>
+  .noticias-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+  }
+  #buscador {
+    flex: 1 1 240px;
+    padding: 0.65rem 0.9rem;
+    border: 2px solid var(--green-100);
+    border-radius: var(--radius);
+    font-size: 0.95rem;
+  }
+  #buscador:focus { outline: none; border-color: var(--green-500); }
+  .filtros { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .chip {
+    background: var(--white);
+    border: 1.5px solid var(--green-100);
+    color: var(--green-700);
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .chip:hover { border-color: var(--green-500); }
+  .chip.active { background: var(--green-700); color: var(--white); border-color: var(--green-700); }
+
+  .card-img { position: relative; overflow: hidden; }
+  .card-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card-origen {
+    position: absolute;
+    top: 0.6rem;
+    left: 0.6rem;
+    background: rgba(0, 0, 0, 0.6);
+    color: #fff;
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.18rem 0.5rem;
+    border-radius: 4px;
+  }
+  .sin-resultados {
+    text-align: center;
+    color: var(--text-muted);
+    padding: 2rem 0;
+    font-size: 1rem;
+  }
+</style>
+
+<script>
+  const buscador = document.getElementById('buscador') as HTMLInputElement;
+  const filtros = document.getElementById('filtros') as HTMLElement;
+  const cards = Array.from(document.querySelectorAll<HTMLElement>('.noticia'));
+  const sinResultados = document.getElementById('sin-resultados') as HTMLElement;
+  let tagActivo = '';
+
+  function aplicar() {
+    const q = buscador.value.trim().toLowerCase();
+    let visibles = 0;
+    for (const card of cards) {
+      const coincideTag = !tagActivo || card.dataset.tag === tagActivo;
+      const coincideTexto = !q || (card.dataset.text ?? '').includes(q);
+      const mostrar = coincideTag && coincideTexto;
+      card.style.display = mostrar ? '' : 'none';
+      if (mostrar) visibles++;
+    }
+    sinResultados.hidden = visibles !== 0;
+  }
+
+  buscador.addEventListener('input', aplicar);
+  filtros.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest('.chip') as HTMLElement | null;
+    if (!btn) return;
+    tagActivo = btn.dataset.tag ?? '';
+    filtros.querySelectorAll('.chip').forEach((c) => c.classList.toggle('active', c === btn));
+    aplicar();
+  });
+</script>

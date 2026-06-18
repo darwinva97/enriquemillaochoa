@@ -7,6 +7,10 @@ fuenteUrl: "https://www.gob.pe/munilosolivos"
 tag: "Reconocimiento"
 emoji: "🏆"
 resumen: "Felipe Castillo Oliva fue reconocido en Colombia por los programas sociales implementados en el distrito de Los Olivos."
+cardImage: "/img/noticias/alcalde-premio-internacional-2024.png"
+bannerImage: "/img/noticias/alcalde-premio-internacional-2024.png"
+imageCredit: "Foto: Municipalidad de Los Olivos"
+imageCreditUrl: "https://www.gob.pe/munilosolivos"
 ---
 
 El alcalde de Los Olivos, **Luis Felipe Castillo Oliva**, recibio el premio internacional **"Alcalde Inclusivo y Solidario 2024"** en una ceremonia realizada en **Colombia**, en reconocimiento a los programas sociales implementados durante su gestion al frente del distrito.

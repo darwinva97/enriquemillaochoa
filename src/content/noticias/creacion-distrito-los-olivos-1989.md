@@ -7,6 +7,10 @@ fuenteUrl: "https://es.wikipedia.org/wiki/Distrito_de_Los_Olivos"
 tag: "Historia"
 emoji: "📜"
 resumen: "El 4 de abril de 1989, mediante Ley N.° 25017, se creo el distrito de Los Olivos separandose de San Martin de Porres. Una historia de casi 20 anos de lucha vecinal."
+cardImage: "/img/noticias/creacion-distrito-los-olivos-1989.png"
+bannerImage: "/img/noticias/creacion-distrito-los-olivos-1989.png"
+imageCredit: "Foto: Wikipedia / UCSS"
+imageCreditUrl: "https://es.wikipedia.org/wiki/Distrito_de_Los_Olivos"
 ---
 
 El **4 de abril de 1989**, mediante la **Ley N.° 25017**, firmada por el presidente del Congreso **Hector Vargas Haya**, se creo oficialmente el **distrito de Los Olivos**, separandose del distrito de San Martin de Porres. La ley fue publicada en el diario oficial El Peruano el 7 de abril de ese mismo ano.
