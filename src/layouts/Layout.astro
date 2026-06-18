@@ -39,6 +39,14 @@ const navLinks = [
     <link rel="canonical" href={Astro.url.href} />
     <title>{tituloCompleto}</title>
 
+    <!-- Tipografía -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Inter:wght@400;500;600&display=swap"
+    />
+
     <!-- Open Graph -->
     <meta property="og:type" content={type} />
     <meta property="og:title" content={tituloCompleto} />
@@ -58,9 +66,21 @@ const navLinks = [
     <header class="site-header">
       <div class="header-inner">
         <a href="/" class="site-logo">
-          <span>EMO</span> Enrique Milla Ochoa
+          <span class="logo-badge">EMO</span>
+          <span class="logo-text">Enrique Milla Ochoa</span>
         </a>
-        <nav class="main-nav">
+        <button
+          class="menu-toggle"
+          id="menuToggle"
+          aria-label="Abrir menú"
+          aria-controls="mainNav"
+          aria-expanded="false"
+        >
+          <span class="menu-toggle-bar"></span>
+          <span class="menu-toggle-bar"></span>
+          <span class="menu-toggle-bar"></span>
+        </button>
+        <nav class="main-nav" id="mainNav">
           {navLinks.map(link => (
             <a href={link.href} class:list={[{ active: currentPath === link.href || (link.href !== '/' && currentPath.startsWith(link.href)) }]}>
               {link.label}
@@ -69,6 +89,17 @@ const navLinks = [
         </nav>
       </div>
     </header>
+
+    <script>
+      const toggle = document.getElementById('menuToggle');
+      const nav = document.getElementById('mainNav');
+      toggle?.addEventListener('click', () => {
+        const open = nav?.classList.toggle('open');
+        toggle.classList.toggle('is-open', open);
+        toggle.setAttribute('aria-expanded', String(!!open));
+        toggle.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+      });
+    </script>
 
     <main>
       <slot />
