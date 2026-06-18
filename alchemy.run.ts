@@ -14,6 +14,9 @@ const database = await D1Database("forum-db", {
 export const website = await Astro("website", {
   name: "enrique-milla-ochoa",
   command: "npx astro build",
+  // Necesario: sin `main`, Alchemy despliega un stub "Not Found" en lugar del
+  // worker real de Astro (todas las rutas SSR caían en ese stub).
+  main: "dist/_worker.js/index.js",
   adopt: true,
   // El sitio es SSR (output: 'server'). El default de Alchemy
   // (not_found_handling: "single-page-application") impediría que las rutas
