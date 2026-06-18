@@ -10,7 +10,12 @@ export default {
     ctx.waitUntil(
       fetch(`${env.SITE_URL}/api/ingest-alerts`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${env.INGEST_SECRET}` },
+        // Content-Type JSON evita la protección CSRF de Astro (checkOrigin),
+        // que bloquearía este POST server-to-server sin cabecera Origin.
+        headers: {
+          Authorization: `Bearer ${env.INGEST_SECRET}`,
+          'Content-Type': 'application/json',
+        },
       })
         .then((r) => r.text())
         .then((t) => console.log('ingest-alerts:', t))
