@@ -7,8 +7,8 @@ fuenteUrl: "http://enriquemillaochoa.blogspot.com/p/historia-de-la-ie-enrique-mi
 tag: "Historia"
 emoji: "🏫"
 resumen: "El 22 de octubre de 1993, el presidente Alberto Fujimori inauguro el colegio del asentamiento, construido por INFES en solo 8 meses sobre un terreno de 3,500 m2."
-cardImage: "/img/noticias/inauguracion-colegio-1993.jpg"
-bannerImage: "/img/noticias/inauguracion-colegio-1993.jpg"
+cardImage: "/img/noticias/inauguracion-colegio-1993.webp"
+bannerImage: "/img/noticias/inauguracion-colegio-1993.webp"
 imageCredit: "Foto: Blog I.E. Enrique Milla Ochoa"
 imageCreditUrl: "http://enriquemillaochoa.blogspot.com/p/historia-de-la-ie-enrique-milla-ochoa.html"
 ---

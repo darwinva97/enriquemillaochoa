@@ -1,15 +1,15 @@
-// Descarga una imagen (og:image) de una fuente por noticia, con crédito.
-// - Eventos (BD): scripts/data.mjs
-// - Artículos editoriales (markdown): src/content/noticias/*.md (usa fuenteUrl)
-// Guarda en public/img/noticias/<slug>.<ext> y escribe scripts/images-manifest.json.
-// Si ninguna fuente da imagen, genera un placeholder SVG con el emoji (sin crédito).
+// Descarga una imagen por noticia (og:image de una fuente, o un override
+// curado de Wikimedia Commons), la OPTIMIZA a WebP (máx 1200px, q80) con sharp,
+// y da crédito. Guarda en public/img/noticias/<slug>.webp y escribe
+// scripts/images-manifest.json. Si no hay imagen, genera un placeholder SVG.
 //
 //   node scripts/fetch-images.mjs           # no re-descarga si ya existe
-//   node scripts/fetch-images.mjs --force   # vuelve a descargar todo
-import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync } from 'node:fs';
+//   node scripts/fetch-images.mjs --force   # regenera todo
+import { readFileSync, writeFileSync, readdirSync, existsSync, mkdirSync, unlinkSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
-import { eventos, slugify } from './data.mjs';
+import sharp from 'sharp';
+import { eventos } from './data.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = join(__dirname, '..');
@@ -18,18 +18,59 @@ const FORCE = process.argv.includes('--force');
 mkdirSync(OUT_DIR, { recursive: true });
 
 const UA = 'Mozilla/5.0 (compatible; EnriqueMillaBot/1.0; +https://enriquemillaochoa.page)';
+const MAX_W = 1200;
+const EXTS = ['webp', 'jpg', 'jpeg', 'png', 'gif', 'svg'];
+
+// Imágenes curadas (Wikimedia Commons, licencia CC con atribución) para
+// noticias editoriales cuya fuente no expone og:image utilizable.
+const OVERRIDES = {
+  'estudio-quechua-2021': {
+    url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/12/Peru_-_Quechua_1.jpg/1280px-Peru_-_Quechua_1.jpg',
+    credit: 'Foto: Julian hne / Wikimedia Commons (CC BY-SA 4.0)',
+    creditUrl: 'https://commons.wikimedia.org/wiki/File:Peru_-_Quechua_1.jpg',
+  },
+  'tesis-unmsm-pobreza-2024': {
+    url: 'https://upload.wikimedia.org/wikipedia/commons/c/cc/Taller_-_Facultad_de_Psicolog%C3%ADa_de_la_Universidad_Nacional_Mayor_de_San_Marcos.jpg',
+    credit: 'Foto: Kanon6996 / Wikimedia Commons (CC BY-SA 4.0)',
+    creditUrl:
+      'https://commons.wikimedia.org/wiki/File:Taller_-_Facultad_de_Psicolog%C3%ADa_de_la_Universidad_Nacional_Mayor_de_San_Marcos.jpg',
+  },
+  'caminata-seguridad-2016': {
+    url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Simulacro_Nacional%2C_Los_Olivos%2C_Lima%2C_Per%C3%BA.jpg/1280px-Simulacro_Nacional%2C_Los_Olivos%2C_Lima%2C_Per%C3%BA.jpg',
+    credit: 'Foto: Dalma Amaro Vasquez / Wikimedia Commons (CC BY-SA 4.0)',
+    creditUrl: 'https://commons.wikimedia.org/wiki/File:Simulacro_Nacional,_Los_Olivos,_Lima,_Per%C3%BA.jpg',
+  },
+  'mega-polvos-construccion': {
+    url: 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Plaza_de_armas_de_los_olivos_%2CLima_%2CPer%C3%BA.jpg',
+    credit: 'Foto: Anzenarturo / Wikimedia Commons (CC BY-SA 3.0)',
+    creditUrl: 'https://commons.wikimedia.org/wiki/File:Plaza_de_armas_de_los_olivos_,Lima_,Per%C3%BA.jpg',
+  },
+};
 
 function decode(s) {
-  return s
-    .replace(/&amp;/g, '&')
-    .replace(/&#x2F;/gi, '/')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'");
+  return s.replace(/&amp;/g, '&').replace(/&#x2F;/gi, '/').replace(/&quot;/g, '"').replace(/&#39;/g, "'");
+}
+
+// fetch con reintentos: evita que un timeout transitorio degrade a placeholder.
+async function fetchRetry(url, opts = {}, intentos = 3) {
+  let err;
+  for (let i = 0; i < intentos; i++) {
+    try {
+      const res = await fetch(url, {
+        headers: { 'user-agent': UA },
+        signal: AbortSignal.timeout(opts.timeout ?? 25000),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return res;
+    } catch (e) {
+      err = e;
+    }
+  }
+  throw err;
 }
 
 async function ogImage(pageUrl) {
-  const res = await fetch(pageUrl, { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(20000) });
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const res = await fetchRetry(pageUrl, { timeout: 20000 });
   const html = await res.text();
   for (const re of [
     /<meta[^>]+property=["']og:image(?::secure_url)?["'][^>]*content=["']([^"']+)["']/i,
@@ -42,17 +83,22 @@ async function ogImage(pageUrl) {
   throw new Error('sin og:image');
 }
 
-async function download(imgUrl, slug) {
-  const res = await fetch(imgUrl, { headers: { 'user-agent': UA }, signal: AbortSignal.timeout(25000) });
-  if (!res.ok) throw new Error(`img HTTP ${res.status}`);
+// Descarga + optimiza a WebP. Devuelve el nombre de archivo.
+async function descargarOptimizar(imgUrl, slug) {
+  const res = await fetchRetry(imgUrl, { timeout: 25000 });
   const ct = (res.headers.get('content-type') || '').toLowerCase();
-  if (!ct.startsWith('image/')) throw new Error(`no es imagen (${ct})`);
-  const ext = ct.includes('png') ? 'png' : ct.includes('webp') ? 'webp' : ct.includes('gif') ? 'gif' : 'jpg';
+  if (ct && !ct.startsWith('image/')) throw new Error(`no es imagen (${ct})`);
   const buf = Buffer.from(await res.arrayBuffer());
   if (buf.length < 2000) throw new Error('imagen demasiado pequeña');
-  const file = `${slug}.${ext}`;
-  writeFileSync(join(OUT_DIR, file), buf);
-  return { file, bytes: buf.length };
+  const webp = await sharp(buf)
+    .rotate() // respeta orientación EXIF
+    .resize({ width: MAX_W, withoutEnlargement: true })
+    .webp({ quality: 80 })
+    .toBuffer();
+  limpiar(slug);
+  const file = `${slug}.webp`;
+  writeFileSync(join(OUT_DIR, file), webp);
+  return { file, bytes: webp.length };
 }
 
 function placeholderSVG(slug, emoji) {
@@ -64,41 +110,56 @@ function placeholderSVG(slug, emoji) {
   <text x="600" y="360" font-size="240" text-anchor="middle">${emoji}</text>
   <text x="600" y="470" font-size="34" fill="#1b5e20" text-anchor="middle" font-family="sans-serif">Enrique Milla Ochoa</text>
 </svg>`;
+  limpiar(slug);
   const file = `${slug}.svg`;
   writeFileSync(join(OUT_DIR, file), svg);
   return file;
 }
 
-// Devuelve true si ya hay una imagen para el slug (cualquier extensión).
+// Borra cualquier imagen previa del slug (cualquier extensión).
+function limpiar(slug) {
+  for (const e of EXTS) {
+    const f = join(OUT_DIR, `${slug}.${e}`);
+    if (existsSync(f)) unlinkSync(f);
+  }
+}
 function existing(slug) {
-  return ['jpg', 'png', 'webp', 'gif', 'svg'].map((e) => `${slug}.${e}`).find((f) => existsSync(join(OUT_DIR, f)));
+  return EXTS.map((e) => `${slug}.${e}`).find((f) => existsSync(join(OUT_DIR, f)));
 }
 
 async function resolverImagen({ slug, emoji, sources }) {
-  const have = existing(slug);
-  if (have && !FORCE) return null; // ya resuelto; el manifest existente se conserva
+  if (existing(slug) && !FORCE) return null;
 
+  // 1) Override curado (Wikimedia)
+  const ov = OVERRIDES[slug];
+  if (ov) {
+    try {
+      const { file, bytes } = await descargarOptimizar(ov.url, slug);
+      console.log(`  ✓ ${slug}  <- ${ov.credit}  (${Math.round(bytes / 1024)} KB webp)`);
+      return { image: `/img/noticias/${file}`, credit: ov.credit, creditUrl: ov.creditUrl, creditTitulo: '' };
+    } catch (e) {
+      console.log(`  · override ${slug}: ${e.message}`);
+    }
+  }
+
+  // 2) og:image de las fuentes
   for (const [fuente, pageUrl, titulo] of sources) {
     try {
       const img = await ogImage(pageUrl);
-      const { file, bytes } = await download(img, slug);
-      console.log(`  ✓ ${slug}  <- ${fuente}  (${Math.round(bytes / 1024)} KB)`);
-      return {
-        image: `/img/noticias/${file}`,
-        credit: `Foto: ${fuente}`,
-        creditUrl: pageUrl,
-        creditTitulo: titulo,
-      };
+      const { file, bytes } = await descargarOptimizar(img, slug);
+      console.log(`  ✓ ${slug}  <- ${fuente}  (${Math.round(bytes / 1024)} KB webp)`);
+      return { image: `/img/noticias/${file}`, credit: `Foto: ${fuente}`, creditUrl: pageUrl, creditTitulo: titulo };
     } catch (e) {
       console.log(`  · ${fuente}: ${e.message}`);
     }
   }
+
+  // 3) Placeholder
   const file = placeholderSVG(slug, emoji);
-  console.log(`  ⚠ ${slug}: sin imagen de fuente, placeholder`);
+  console.log(`  ⚠ ${slug}: sin imagen, placeholder`);
   return { image: `/img/noticias/${file}`, credit: '', creditUrl: '', creditTitulo: '' };
 }
 
-// --- Artículos editoriales (markdown) ---
 function leerEditoriales() {
   const dir = join(ROOT, 'src', 'content', 'noticias');
   return readdirSync(dir)
@@ -107,13 +168,7 @@ function leerEditoriales() {
       const raw = readFileSync(join(dir, f), 'utf8');
       const fm = raw.match(/^---\n([\s\S]*?)\n---/);
       const get = (k) => (fm?.[1].match(new RegExp(`^${k}:\\s*"?([^"\\n]+)"?`, 'm'))?.[1] || '').trim();
-      return {
-        slug: f.replace(/\.md$/, ''),
-        emoji: get('emoji') || '📰',
-        fuente: get('fuente'),
-        fuenteUrl: get('fuenteUrl'),
-        titulo: get('titulo'),
-      };
+      return { slug: f.replace(/\.md$/, ''), emoji: get('emoji') || '📰', fuente: get('fuente'), fuenteUrl: get('fuenteUrl'), titulo: get('titulo') };
     });
 }
 
@@ -125,7 +180,6 @@ for (const e of eventos) {
   const r = await resolverImagen(e);
   if (r) manifest[e.slug] = r;
 }
-
 console.log('Editoriales (markdown):');
 for (const a of leerEditoriales()) {
   const sources = a.fuenteUrl ? [[a.fuente || 'Fuente', a.fuenteUrl, a.titulo]] : [];

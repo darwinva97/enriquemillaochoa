@@ -70,7 +70,7 @@ const parrafos = alerta
   : [];
 ---
 
-<Layout title={data.titulo} description={data.resumen}>
+<Layout title={data.titulo} description={data.resumen} image={data.banner ?? undefined} type="article">
   {data.banner && (
     <BannerImage src={data.banner} alt={data.titulo} credit={data.credit} creditUrl={data.creditUrl} />
   )}

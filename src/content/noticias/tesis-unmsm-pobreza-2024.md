@@ -7,8 +7,10 @@ fuenteUrl: "https://alicia.concytec.gob.pe/vufind/Record/UNMS_8b5d2e82b0c779a4ae
 tag: "Academico"
 emoji: "📚"
 resumen: "Investigador de San Marcos publico un estudio cualitativo sobre como el discurso de pobreza afecta la identidad y segregacion social del AA.HH. Enrique Milla Ochoa."
-cardImage: "/img/noticias/tesis-unmsm-pobreza-2024.svg"
-bannerImage: "/img/noticias/tesis-unmsm-pobreza-2024.svg"
+cardImage: "/img/noticias/tesis-unmsm-pobreza-2024.webp"
+bannerImage: "/img/noticias/tesis-unmsm-pobreza-2024.webp"
+imageCredit: "Foto: Kanon6996 / Wikimedia Commons (CC BY-SA 4.0)"
+imageCreditUrl: "https://commons.wikimedia.org/wiki/File:Taller_-_Facultad_de_Psicolog%C3%ADa_de_la_Universidad_Nacional_Mayor_de_San_Marcos.jpg"
 ---
 
 El investigador **Raul Mayron Jimenez Dominguez**, de la **Universidad Nacional Mayor de San Marcos (UNMSM)**, publico en 2024 su tesis de grado titulada *"Instrumentalizacion del discurso de la pobreza. El caso del Asentamiento Humano Enrique Milla Ochoa, Los Olivos"*.

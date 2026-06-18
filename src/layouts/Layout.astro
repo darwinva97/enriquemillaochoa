@@ -2,10 +2,20 @@
 interface Props {
   title: string;
   description?: string;
+  image?: string; // URL (absoluta o relativa) para og:image / twitter:image
+  type?: 'website' | 'article';
 }
 
-const { title, description = 'Portal comunitario del AA.HH. Enrique Milla Ochoa, Los Olivos, Lima, Peru' } = Astro.props;
+const {
+  title,
+  description = 'Portal comunitario del AA.HH. Enrique Milla Ochoa, Los Olivos, Lima, Peru',
+  image,
+  type = 'website',
+} = Astro.props;
 const currentPath = Astro.url.pathname;
+
+const tituloCompleto = `${title} | AA.HH. Enrique Milla Ochoa`;
+const ogImage = image ? new URL(image, Astro.url).href : undefined;
 
 const navLinks = [
   { href: '/', label: 'Inicio' },
@@ -26,7 +36,23 @@ const navLinks = [
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>{title} | AA.HH. Enrique Milla Ochoa</title>
+    <link rel="canonical" href={Astro.url.href} />
+    <title>{tituloCompleto}</title>
+
+    <!-- Open Graph -->
+    <meta property="og:type" content={type} />
+    <meta property="og:title" content={tituloCompleto} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={Astro.url.href} />
+    <meta property="og:site_name" content="Enrique Milla Ochoa" />
+    <meta property="og:locale" content="es_PE" />
+    {ogImage && <meta property="og:image" content={ogImage} />}
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content={ogImage ? 'summary_large_image' : 'summary'} />
+    <meta name="twitter:title" content={tituloCompleto} />
+    <meta name="twitter:description" content={description} />
+    {ogImage && <meta name="twitter:image" content={ogImage} />}
   </head>
   <body>
     <header class="site-header">

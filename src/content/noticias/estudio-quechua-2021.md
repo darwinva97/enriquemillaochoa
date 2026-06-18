@@ -7,8 +7,10 @@ fuenteUrl: "https://revistasinvestigacion.unmsm.edu.pe/index.php/lenguaysociedad
 tag: "Cultura"
 emoji: "🗣️"
 resumen: "Investigadoras de la UNMSM y UNFV documentaron que los fundadores del AA.HH. Enrique Milla Ochoa hablan quechua de tres grupos dialectales, pero sus hijos ya no hablan la lengua."
-cardImage: "/img/noticias/estudio-quechua-2021.svg"
-bannerImage: "/img/noticias/estudio-quechua-2021.svg"
+cardImage: "/img/noticias/estudio-quechua-2021.webp"
+bannerImage: "/img/noticias/estudio-quechua-2021.webp"
+imageCredit: "Foto: Julian hne / Wikimedia Commons (CC BY-SA 4.0)"
+imageCreditUrl: "https://commons.wikimedia.org/wiki/File:Peru_-_Quechua_1.jpg"
 ---
 
 Un equipo de investigadoras liderado por **Carmela Florencia Lopez Capillo** (UNFV), **Yris Barraza de Garcia** (ISP Formabiap, Iquitos) y **Rosalinn Cancino Verde** (UNFV) publico en 2021 un estudio fundamental sobre la diversidad linguistica en nuestro asentamiento.
